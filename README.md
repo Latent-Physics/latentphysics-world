@@ -4,15 +4,13 @@
 
 # Latent Physics World
 
-### The world engine for physical intelligence.
-### 物理智能的世界引擎 · 物理大模型的基座。
+### A high-precision, high-speed physics simulator for physical AI.
+### 面向物理智能的高精度 · 高速物理模拟器。
 
-Robots learn to touch, grasp, and move through the human world —
-thousands of parallel lifetimes at a time — before they ever step into ours.
-The substrate for **physical foundation models**.
+Thousands of contact-accurate worlds on a single GPU — where robots learn
+to touch, grasp, and move through the human world before they ever step into ours.
 
-*让机器人在踏入现实之前,先在成千上万个并行的物理世界里,学会触碰、抓取与穿行。*
-*—— 训练**物理大模型**的基座。*
+*单张 GPU 上成千上万个接触精确的并行物理世界——让机器人在踏入现实之前,先学会触碰、抓取与穿行。*
 
 </div>
 
@@ -39,30 +37,27 @@ dense **human indoor world**, where robots must both manipulate and navigate.
 
 ## What we are building
 
-**Latent Physics World (LPW)** is a GPU-native world engine where thousands of
-physical worlds run in parallel, contact-accurate, on a single accelerator.
-Robots are born here, fail here, and grow here — and the skills they learn
-transfer to real hardware. It is the substrate on which **physical foundation
-models** are trained — physics learned and rolled out in latent space, at scale.
+**Latent Physics World (LPW)** is a GPU-native physics simulator built around
+two numbers: **how closely contact matches reality, and how many worlds run
+per second.** Thousands of contact-accurate worlds in parallel on a single
+accelerator; what happens inside transfers to real hardware.
 
 Not a viewer of the world. An engine that *runs* it.
 
-> **Latent Physics World(LPW)** 是一个 GPU 原生的世界引擎:单张加速卡上,成千上万个
-> 物理世界并行运行、接触精确。机器人在这里出生、试错、成长,学到的技能可迁移到真实硬件。
-> 它是训练**物理大模型**的基座——把物理放进**潜空间**去学习与推演,并可大规模并行;
-> 不是世界的观察者,而是*运行*世界的引擎。
+> **Latent Physics World(LPW)** 是一个 GPU 原生的物理模拟器,只围绕两个数字构建:
+> **接触与现实的差距有多小,每秒能运行多少个世界。** 单张加速卡上成千上万个接触精确的
+> 并行物理世界,仿真中发生的一切可迁移到真实硬件——不是世界的观察者,而是*运行*世界的引擎。
 
 <div align="center">
-<img src="docs/media/architecture.svg" width="880" alt="LPW architecture: learning interface / worlds &amp; perception / physics core, with the closed loop between models, the world, and reality"/>
+<img src="docs/media/architecture.svg" width="820" alt="LPW architecture: simulation interface / worlds &amp; perception / physics core — your applications above, your compute below"/>
 </div>
 
-LPW sits between what you build and what you compute on. Above the box:
-your models, policies, and data engines. Below it: one consumer GPU today, a
-fleet tomorrow. Beside it — the part that matters most — the closed loop:
-models improve in the world, and the world refines itself from reality.
+LPW sits between what you build and what you compute on: above the box, your
+environments, pipelines, and data engines; below it, whatever compute you
+have — one consumer GPU today, a fleet tomorrow.
 
-> LPW 位于"你的应用"与"你的算力"之间:上面是你的模型、策略与数据引擎,下面是从单卡到
-> 舰队的算力;旁边是最关键的部分——**双向闭环**:模型在世界中变强,世界从现实中变准。
+> LPW 位于"你的应用"与"你的算力"之间:上面是你的环境、管线与数据引擎,
+> 下面是你手上的算力——今天一张消费级显卡,明天一支 GPU 舰队。
 
 ## What makes it different
 
@@ -72,7 +67,7 @@ models improve in the world, and the world refines itself from reality.
 | **🏠** | **Indoor worlds on demand** — a pipeline that turns raw 3D assets into simulatable, collision-ready worlds. | 按需生成的室内世界(资产管线) |
 | **👁** | **Multi-modal perception** — LiDAR, depth, and segmentation, GPU-batched across every world. | 多模感知(LiDAR·深度·分割) |
 | **🎯** | **Sim-to-real** — domain randomization and calibration built to close the reality gap. | sim-to-real(域随机化 + 标定) |
-| **🧠** | **Learning-native** — zero-copy PyTorch tensors, fully batched; the simulator speaks the language of the models it trains. | 面向学习(torch·批量·零拷贝) |
+| **🧠** | **PyTorch-native interface** — zero-copy tensors, fully batched; simulation state flows straight into your stack. | PyTorch 原生接口(零拷贝·批量) |
 
 ## Gallery — real runs, real numbers
 
@@ -103,22 +98,22 @@ obs = scene.qpos()        # zero-copy PyTorch tensor, ready to train on
 
 *Getting started and platform requirements (Linux / NVIDIA CUDA) live in [`docs/`](docs/).*
 
-## Roadmap — from one precise arm to self-improving physical AI
+## Roadmap — accuracy first, then speed, then reality
 
-The destination is a closed loop: models improve in the world, and the world
-improves from reality. Each stage is a shippable capability on that path.
+A simulator earns trust on two axes: how close it is to reality, and how fast
+it runs. Every stage below pushes one of the two.
 
-> **路线图——从一只精确的机械臂,到自我改进的物理智能。** 终点是一个闭环:
-> 模型在世界中变强,世界从现实中变准。每一阶段都是通往终点的可交付能力。
+> **路线图——先精度,再速度,最终对齐现实。** 模拟器的价值只在两条轴上:
+> 离现实有多近,跑得有多快。每一阶段都在推进其中之一。
 
 | Stage | | Milestone · 里程碑 |
 |---|---|---|
 | **R0 · Engine core** | ✅ | Contact-accurate GPU physics + asset pipeline, verified on real hardware. 接触精确的 GPU 物理与资产管线,真实硬件验证。 |
-| **R1 · Precision manipulation** | ▶ | Robot-arm manipulation trained end-to-end: vectorized envs, reference-engine fidelity gate, physics sentinels, RL baselines. 机械臂操作端到端训练:向量化环境、保真基准、物理哨兵、RL 基线。 |
-| **R2 · Worlds & perception at scale** | | Procedural indoor scenes; depth, segmentation, LiDAR; an auto-verified manipulation benchmark suite at millions of steps/s. 程序化室内场景与多模感知,数百万步/秒的自动验证任务基准。 |
-| **R3 · The self-improving simulator** | | Real-robot calibration and learned residual dynamics — physics refined in latent space from deployment data. The loop starts running both ways. 真机标定 + 残差学习动力学:用真实数据在潜空间中修准物理,双向闭环启动。 |
-| **R4 · RSI infrastructure** | | Automatic task generation with verifiable rewards, curriculum engines, world-state branching and deterministic replay, anti-exploit guards, trajectory data engine. 自动任务生成与可验证奖励、课程引擎、世界状态分支与确定性重放、反作弊防线、数据引擎。 |
-| **R5 · The closed loop** | | Generation-over-generation improvement of physical foundation models at fleet scale — the substrate where physical intelligence compounds. 物理大模型的代际复利改进——物理智能在这里滚雪球。 |
+| **R1 · Precision manipulation** | ✅ | Vectorized simulation interface, reference-engine fidelity gate (0.00% contact-force gap), physics sentinels; usability proven end-to-end. 向量化仿真接口、对参考引擎的保真门(接触力 0.00% 差)、物理哨兵,端到端可用性验证。 |
+| **R2 · Worlds & perception** | ✅ | Procedural indoor scenes; batched LiDAR, depth, segmentation; a 12-task auto-verified benchmark suite. 程序化室内场景、批量激光雷达/深度/分割、12 任务自动验证基准。 |
+| **R3 · Speed at scale** | | BVH broadphase, sleep-aware CUDA graphs, multi-GPU — cluttered 100+ geom scenes at millions of steps per second. BVH 宽相、sleep 感知的 CUDA 图、多卡:杂乱大场景也要每秒百万步。 |
+| **R4 · Richer worlds** | | Indoor scenes from 3D datasets (USD/GLB), articulated furniture, higher-fidelity sensing; soft bodies on the horizon. 3D 数据集室内场景导入、可动家具、更高保真传感;软体物理在望。 |
+| **R5 · Calibrated to reality** | | Real-robot calibration and learned residual dynamics (latent-space physics) — a simulator that converges to reality over time. 真机标定 + 残差学习动力学(潜空间物理):随时间向现实收敛的模拟器。 |
 
 ## Acknowledgements — we stand on open foundations
 

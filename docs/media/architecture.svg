@@ -1,75 +1,49 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1240" height="620" viewBox="0 0 1240 620" font-family="system-ui,'Segoe UI',Helvetica,Arial,sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="620" viewBox="0 0 900 620" font-family="system-ui,'Segoe UI',Helvetica,Arial,sans-serif">
 <defs>
 <marker id="ag" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1 1L9 5L1 9" fill="none" stroke="#9ca3af" stroke-width="1.6" stroke-linecap="round"/></marker>
-<marker id="ap" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1 1L9 5L1 9" fill="none" stroke="#9333ea" stroke-width="1.6" stroke-linecap="round"/></marker>
 </defs>
-<rect width="1240" height="620" fill="#ffffff"/>
+<rect width="900" height="620" fill="#ffffff"/>
 
-<text x="410" y="20" text-anchor="middle" font-size="12" fill="#9ca3af">what you build · 你的应用</text>
+<text x="450" y="20" text-anchor="middle" font-size="12" fill="#9ca3af">what you build · 你的应用</text>
 <g fill="#ffffff" stroke="#d1d5db">
-<rect x="86" y="28" width="200" height="40" rx="9"/>
-<rect x="310" y="28" width="200" height="40" rx="9"/>
-<rect x="534" y="28" width="200" height="40" rx="9"/>
+<rect x="126" y="28" width="200" height="40" rx="9"/>
+<rect x="350" y="28" width="200" height="40" rx="9"/>
+<rect x="574" y="28" width="200" height="40" rx="9"/>
 </g>
 <g font-size="13.5" fill="#374151" text-anchor="middle">
-<text x="186" y="53">Physical foundation models</text>
-<text x="410" y="53">RL policies &amp; control</text>
-<text x="634" y="53">Data generation</text>
+<text x="226" y="53">Robotics environments</text>
+<text x="450" y="53">ML &amp; RL pipelines</text>
+<text x="674" y="53">Data generation</text>
 </g>
 <g stroke="#9ca3af" stroke-width="1.4">
-<line x1="186" y1="68" x2="186" y2="94" marker-end="url(#ag)"/>
-<line x1="410" y1="68" x2="410" y2="94" marker-end="url(#ag)"/>
-<line x1="634" y1="68" x2="634" y2="94" marker-end="url(#ag)"/>
+<line x1="226" y1="68" x2="226" y2="94" marker-end="url(#ag)"/>
+<line x1="450" y1="68" x2="450" y2="94" marker-end="url(#ag)"/>
+<line x1="674" y1="68" x2="674" y2="94" marker-end="url(#ag)"/>
 </g>
 
-<rect x="60" y="100" width="700" height="420" rx="16" fill="#fbfaf8" stroke="#d8d6d0" stroke-width="1.2"/>
-<text x="410" y="132" text-anchor="middle" font-size="20" font-weight="600" fill="#111827">Latent Physics World</text>
-<text x="410" y="152" text-anchor="middle" font-size="12" fill="#9ca3af">the world engine for physical intelligence</text>
+<rect x="100" y="100" width="700" height="420" rx="16" fill="#fbfaf8" stroke="#d8d6d0" stroke-width="1.2"/>
+<text x="450" y="132" text-anchor="middle" font-size="20" font-weight="600" fill="#111827">Latent Physics World</text>
+<text x="450" y="152" text-anchor="middle" font-size="12" fill="#9ca3af">a high-precision, high-speed physics simulator for physical AI</text>
 
-<rect x="88" y="170" width="644" height="100" rx="10" fill="#dbeafe" stroke="#93c5fd"/>
-<text x="108" y="198" font-size="16" font-weight="600" fill="#1e3a8a">Learning interface</text>
-<text x="712" y="198" text-anchor="end" font-size="12.5" fill="#1e3a8a" opacity="0.75">训练接口</text>
-<text x="108" y="224" font-size="12.5" fill="#1e40af">vectorized envs · zero-copy PyTorch tensors · GPU-resident auto-reset</text>
-<text x="108" y="246" font-size="12.5" fill="#1e40af">auto-verified task suite · world snapshot / branch / restore</text>
+<rect x="128" y="170" width="644" height="100" rx="10" fill="#dbeafe" stroke="#93c5fd"/>
+<text x="148" y="198" font-size="16" font-weight="600" fill="#1e3a8a">Simulation interface</text>
+<text x="752" y="198" text-anchor="end" font-size="12.5" fill="#1e3a8a" opacity="0.75">仿真接口</text>
+<text x="148" y="224" font-size="12.5" fill="#1e40af">MJCF world loading · vectorized batched API · zero-copy PyTorch tensors</text>
+<text x="148" y="246" font-size="12.5" fill="#1e40af">world snapshot / branch / restore · auto-verified benchmark tasks</text>
 
-<rect x="88" y="284" width="644" height="100" rx="10" fill="#dcfce7" stroke="#86efac"/>
-<text x="108" y="312" font-size="16" font-weight="600" fill="#14532d">Worlds &amp; perception</text>
-<text x="712" y="312" text-anchor="end" font-size="12.5" fill="#14532d" opacity="0.75">世界与感知</text>
-<text x="108" y="338" font-size="12.5" fill="#166534">procedural indoor scenes · asset pipeline: mesh → convex parts / GPU SDF</text>
-<text x="108" y="360" font-size="12.5" fill="#166534">batched LiDAR · depth · segmentation (native GPU renderer)</text>
+<rect x="128" y="284" width="644" height="100" rx="10" fill="#dcfce7" stroke="#86efac"/>
+<text x="148" y="312" font-size="16" font-weight="600" fill="#14532d">Worlds &amp; perception</text>
+<text x="752" y="312" text-anchor="end" font-size="12.5" fill="#14532d" opacity="0.75">世界与感知</text>
+<text x="148" y="338" font-size="12.5" fill="#166534">procedural indoor scenes · asset pipeline: mesh → convex parts / GPU SDF</text>
+<text x="148" y="360" font-size="12.5" fill="#166534">batched LiDAR · depth · segmentation (native GPU renderer)</text>
 
-<rect x="88" y="398" width="644" height="100" rx="10" fill="#fef3c7" stroke="#fcd34d"/>
-<text x="108" y="426" font-size="16" font-weight="600" fill="#92400e">Physics core</text>
-<text x="712" y="426" text-anchor="end" font-size="12.5" fill="#92400e" opacity="0.75">物理内核</text>
-<text x="108" y="452" font-size="12.5" fill="#a16207">contact-accurate rigid dynamics · 8192+ parallel worlds · CUDA-graph stepping</text>
-<text x="108" y="474" font-size="12.5" fill="#a16207">physics sentinels (anti-exploit) · built on mujoco_warp (Apache-2.0)</text>
+<rect x="128" y="398" width="644" height="100" rx="10" fill="#fef3c7" stroke="#fcd34d"/>
+<text x="148" y="426" font-size="16" font-weight="600" fill="#92400e">Physics core</text>
+<text x="752" y="426" text-anchor="end" font-size="12.5" fill="#92400e" opacity="0.75">物理内核</text>
+<text x="148" y="452" font-size="12.5" fill="#a16207">contact-accurate rigid dynamics · 8192+ parallel worlds · CUDA-graph stepping</text>
+<text x="148" y="474" font-size="12.5" fill="#a16207">physics sentinels (fidelity guards) · built on mujoco_warp (Apache-2.0)</text>
 
-<line x1="410" y1="520" x2="410" y2="542" stroke="#9ca3af" stroke-width="1.4" marker-end="url(#ag)"/>
-<rect x="60" y="548" width="700" height="52" rx="10" fill="#f3f4f6" stroke="#e5e7eb"/>
-<text x="410" y="579" text-anchor="middle" font-size="13.5" fill="#4b5563">your compute — one consumer GPU today · a multi-GPU fleet tomorrow · 单卡起步,舰队扩展</text>
-
-<rect x="800" y="100" width="380" height="420" rx="16" fill="#faf5ff" stroke="#d8b4fe" stroke-dasharray="6 4"/>
-<text x="990" y="132" text-anchor="middle" font-size="16" font-weight="600" fill="#6b21a8">The closed loop</text>
-<text x="990" y="152" text-anchor="middle" font-size="12.5" fill="#9333ea" opacity="0.8">双向闭环 · R3–R5</text>
-
-<g fill="#ffffff" stroke="#d8b4fe">
-<rect x="910" y="200" width="160" height="40" rx="9"/>
-<rect x="1012" y="310" width="160" height="40" rx="9"/>
-<rect x="910" y="420" width="160" height="40" rx="9"/>
-<rect x="808" y="304" width="160" height="52" rx="9"/>
-</g>
-<g font-size="12.5" fill="#6b21a8" text-anchor="middle">
-<text x="990" y="224">train in the world</text>
-<text x="1092" y="334">deploy to reality</text>
-<text x="990" y="444">real data returns</text>
-<text x="888" y="324">the world refines itself</text>
-<text x="888" y="342" font-size="11" opacity="0.75">latent-space physics · 潜空间物理</text>
-</g>
-<g stroke="#9333ea" stroke-width="1.5" fill="none">
-<path d="M 1074 234 Q 1096 260 1096 306" marker-end="url(#ap)"/>
-<path d="M 1092 354 Q 1088 400 1052 424" marker-end="url(#ap)"/>
-<path d="M 918 428 Q 890 400 888 360" marker-end="url(#ap)"/>
-<path d="M 888 300 Q 892 258 918 238" marker-end="url(#ap)"/>
-</g>
-<text x="990" y="336" text-anchor="middle" font-size="13" font-weight="600" fill="#9333ea" opacity="0.65">RSI</text>
+<line x1="450" y1="520" x2="450" y2="542" stroke="#9ca3af" stroke-width="1.4" marker-end="url(#ag)"/>
+<rect x="100" y="548" width="700" height="52" rx="10" fill="#f3f4f6" stroke="#e5e7eb"/>
+<text x="450" y="579" text-anchor="middle" font-size="13.5" fill="#4b5563">your compute — one consumer GPU today · a multi-GPU fleet tomorrow · 单卡起步,舰队扩展</text>
 </svg>
