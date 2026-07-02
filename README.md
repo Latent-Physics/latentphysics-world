@@ -121,6 +121,4 @@ Full attribution is in [`NOTICE`](NOTICE) and [`THIRD_PARTY_NOTICES.md`](THIRD_P
 
 **Building the world where physical intelligence is born.**
 
-Partnerships & inquiries — [team@ora.io](mailto:team@ora.io)
-
 </div>
