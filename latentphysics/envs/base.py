@@ -21,6 +21,11 @@ class TaskConfig:
     episode_len: int = 200        # control steps per episode
     substeps: int = 4             # physics steps per control step (dt*4 = control period)
     seed: int = 0
+    # --- domain randomization v0 (observation/action noise) -----------------
+    # Parameter-level DR (per-world friction/mass) needs batched model fields
+    # and lands with the R3 calibration stack.
+    obs_noise: float = 0.0        # gaussian std added to observations
+    act_noise: float = 0.0        # gaussian std added to actions (pre-scaling)
 
 
 class VecTask:
@@ -83,6 +88,9 @@ class VecTask:
 
     def step(self, action: torch.Tensor):
         """action in [-1,1]^(n,act_dim) -> (obs, reward, done, info)."""
+        if self.cfg.act_noise > 0:
+            action = action + torch.randn(
+                action.shape, device=self.device, generator=self.gen) * self.cfg.act_noise
         a = torch.clamp(action, -1.0, 1.0)
         target = self._ctrl_lo + (a + 1.0) * 0.5 * (self._ctrl_hi - self._ctrl_lo)
         self.ctrl.copy_(target)
@@ -98,6 +106,10 @@ class VecTask:
             # recompute obs for the reset worlds so the policy sees fresh state
             obs_new, _, _ = self._compute()
             obs = torch.where(done.unsqueeze(-1), obs_new, obs)
+
+        if self.cfg.obs_noise > 0:
+            obs = obs + torch.randn(
+                obs.shape, device=self.device, generator=self.gen) * self.cfg.obs_noise
 
         info = {"success": success, "timeout": timeout}
         return obs, reward, done, info

@@ -16,5 +16,6 @@ lands in R4; R1 keeps a lean subclass API (VecTask hooks).
 
 from .base import TaskConfig, VecTask
 from .franka_reach import FrankaReach
+from .sentinels import PhysicsSentinel, SentinelConfig
 
-__all__ = ["TaskConfig", "VecTask", "FrankaReach"]
+__all__ = ["TaskConfig", "VecTask", "FrankaReach", "PhysicsSentinel", "SentinelConfig"]
