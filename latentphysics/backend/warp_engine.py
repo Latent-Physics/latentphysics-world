@@ -51,20 +51,26 @@ def _auto_budgets(mjm, n_worlds: int) -> dict:
     """
     import numpy as np
 
-    # Only geoms that can actually collide matter — visual meshes
-    # (contype=0, conaffinity=0) must not inflate solver arrays: njmax sizes
-    # per-world constraint buffers that the solver sweeps EVERY step, so
-    # over-allocation is a direct throughput hit (measured 83-geom Franka
-    # scene: all-geom heuristic cost ~5x in step time).
-    ncol = int(np.count_nonzero((mjm.geom_contype | mjm.geom_conaffinity) != 0))
-    ncol = max(ncol, 1)
-    per_world = min(max(8 * ncol, 64), 1024)       # contacts per world
+    # Contacts require at least one DYNAMIC geom: static room geometry
+    # (walls, furniture on the world body) never collides with itself, so
+    # budgets must scale with movable collision geoms, not total geoms.
+    # Getting this wrong is a direct OOM/throughput cliff: a 106-geom room
+    # budgeted by total count allocated 2.5 GB of EPA buffers alone.
+    col = (mjm.geom_contype | mjm.geom_conaffinity) != 0
+    dyn = mjm.body_dofnum[mjm.geom_bodyid] > 0
+    n_dyn = max(int(np.count_nonzero(col & dyn)), 1)
+    per_world = min(max(16 * n_dyn + 16, 64), 512)   # contacts per world
+    naconmax = min(per_world * max(n_worlds, 1), 1 << 19)  # pooled across worlds
     return {
-        # naconmax is the cap across ALL worlds combined
-        "naconmax": per_world * max(n_worlds, 1),
+        "naconmax": naconmax,
         # njmax is per world; ~4 constraint rows per pyramidal condim-3 contact
-        # plus headroom for joint limits/equality
-        "njmax": min(max(4 * per_world, 128), 4096),
+        "njmax": min(max(4 * per_world, 128), 2048),
+        # convex-CCD (GJK/EPA) slots cost ~3 KB each. Demand is ~2-4 slots per
+        # dynamic geom per world (measured ~64/world on a 32-object room), so
+        # scale per world with margin but hard-cap total: the cap trades
+        # dropped convex-contact candidates for not OOMing — the R2 BVH
+        # broadphase is the real fix for huge cluttered batches.
+        "naccdmax": min(max(2 * n_dyn, 16) * max(n_worlds, 1), 1 << 17),
     }
 
 
@@ -80,6 +86,7 @@ class Scene:
     _graph: Any = None      # captured CUDA graph of a step sequence
     _graph_n: int = 0       # substep count the graph was captured for
     _fwd_graph: Any = None  # captured CUDA graph of forward() (used by resets)
+    _no_graph: bool = False  # sleep-enabled models can't use naive capture
 
     # --- stepping -------------------------------------------------------------
     def step(self, n: int = 1) -> "Scene":
@@ -169,9 +176,12 @@ class WarpEngine:
             "nworld": self.config.n_worlds,
             "naconmax": self.config.naconmax or budgets["naconmax"],
             "njmax": self.config.njmax or budgets["njmax"],
+            "naccdmax": budgets["naccdmax"],
         }
         data = mjw.make_data(mjm, **make_kw)
-        return Scene(engine=self, mjm=mjm, model=model, data=data, n_worlds=self.config.n_worlds)
+        no_graph = bool(mjm.opt.enableflags & mujoco.mjtEnableBit.mjENBL_SLEEP)
+        return Scene(engine=self, mjm=mjm, model=model, data=data,
+                     n_worlds=self.config.n_worlds, _no_graph=no_graph)
 
     # --- internals ------------------------------------------------------------
     def _step(self, scene: Scene, n: int) -> None:
@@ -184,6 +194,14 @@ class WarpEngine:
         if capture is unsupported.
         """
         mjw, wp = self._mjw, self._wp
+        if scene._no_graph:
+            # sleep-enabled models change kernel launch shapes dynamically —
+            # incompatible with naive whole-step graph capture (sleep-aware
+            # capture is fork-level engine work, tracked for R2)
+            for _ in range(n):
+                mjw.step(scene.model, scene.data)
+            wp.synchronize()
+            return
         if scene._graph is not None and scene._graph_n == n:
             wp.capture_launch(scene._graph)
         else:
