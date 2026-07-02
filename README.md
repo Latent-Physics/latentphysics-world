@@ -82,7 +82,7 @@ backed by committed tests. Nothing staged, nothing rendered offline.
 |---|---|---|
 | **Trained policy — 100% success** PPO on 2048 parallel worlds; deterministic eval 100%. *PPO 策略,确定性评估 100% 成功* ([train](examples/train_franka_reach.py)) | **Procedural indoor worlds** seeded rooms: walls, furniture, clutter, cameras. *程序化室内场景(可复现)* ([code](latentphysics/assets/scene_gen.py)) | **Asset pipeline** concave mesh → CoACD convex parts → simulation. *凹网格→凸分解→仿真* ([code](latentphysics/assets/__init__.py)) |
 | <img src="docs/media/policy_reach.webp" width="240"/> | <img src="docs/media/procedural_room.webp" width="240"/> | <img src="docs/media/convex_decomposition.webp" width="240"/> |
-| **GPU depth + segmentation** native batch renderer, meters-true depth. *批量深度+分割(米制)* ([code](latentphysics/perception/camera.py)) | **Batched LiDAR** 5,760 beams × N worlds in one launch → point clouds. *批量激光雷达点云* ([code](latentphysics/perception/lidar.py)) | **~5M physics steps/s** 8192 contact-accurate worlds on one GPU; contact forces match the reference engine to 0.00%. *单卡 8192 世界,约每秒五百万物理步* ([test](tests/test_envs_gpu.py)) |
+| **GPU depth + segmentation** native batch renderer, meters-true depth. *批量深度+分割(米制)* ([code](latentphysics/perception/camera.py)) | **Batched LiDAR** 5,760 beams × N worlds in one launch → point clouds. *批量激光雷达点云* ([code](latentphysics/perception/lidar.py)) | **8M+ physics steps/s** 8192 contact-accurate worlds on one GPU; contact forces match the reference engine to 0.00%. *单卡 8192 世界,每秒八百万+物理步* ([test](tests/test_envs_gpu.py)) |
 | <img src="docs/media/depth_segmentation.webp" width="240"/> | <img src="docs/media/lidar_pointcloud.webp" width="240"/> | <img src="docs/media/hero.png" width="240"/> |
 
 And the whole thing speaks PyTorch:

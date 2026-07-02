@@ -83,8 +83,7 @@ class Scene:
     model: Any          # mujoco_warp Model
     data: Any           # mujoco_warp Data
     n_worlds: int = 1
-    _graph: Any = None      # captured CUDA graph of a step sequence
-    _graph_n: int = 0       # substep count the graph was captured for
+    _graph: Any = None      # captured CUDA graph of ONE step (replayed n times)
     _fwd_graph: Any = None  # captured CUDA graph of forward() (used by resets)
     _no_graph: bool = False  # sleep-enabled models can't use naive capture
 
@@ -197,27 +196,35 @@ class WarpEngine:
         if scene._no_graph:
             # sleep-enabled models change kernel launch shapes dynamically —
             # incompatible with naive whole-step graph capture (sleep-aware
-            # capture is fork-level engine work, tracked for R2)
+            # capture is fork-level engine work, tracked for R2-eng)
             for _ in range(n):
                 mjw.step(scene.model, scene.data)
             wp.synchronize()
             return
-        if scene._graph is not None and scene._graph_n == n:
-            wp.capture_launch(scene._graph)
-        else:
+        if scene._graph is None:
             try:
-                # warm up once eagerly so all modules are JIT-compiled,
-                # then capture the sequence
-                for _ in range(n):
-                    mjw.step(scene.model, scene.data)
+                # one eager pass so every module is JIT-compiled, then capture
+                # a SINGLE step. step(n) replays it n times: replay launch is
+                # ~microseconds, and a single-step graph is reused for ANY n.
+                # (Capturing n-step sequences keyed on n silently re-warmed and
+                # re-captured whenever n changed — a measured 10x throughput
+                # trap for callers using variable step counts.)
+                mjw.step(scene.model, scene.data)
                 with wp.ScopedCapture() as cap:
-                    for _ in range(n):
-                        mjw.step(scene.model, scene.data)
-                scene._graph, scene._graph_n = cap.graph, n
-            except Exception:
-                scene._graph, scene._graph_n = None, 0
-                for _ in range(n):
                     mjw.step(scene.model, scene.data)
+                scene._graph = cap.graph
+                n -= 1  # the JIT warmup pass above already advanced one step
+                if n <= 0:
+                    wp.synchronize()
+                    return
+            except Exception:
+                scene._graph = None
+        if scene._graph is not None:
+            for _ in range(n):
+                wp.capture_launch(scene._graph)
+        else:
+            for _ in range(n):
+                mjw.step(scene.model, scene.data)
         wp.synchronize()
 
     def _reset(self, scene: Scene) -> None:

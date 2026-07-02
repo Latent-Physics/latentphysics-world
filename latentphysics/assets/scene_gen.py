@@ -31,6 +31,13 @@ class RoomSpec:
     clutter_size: tuple = (0.02, 0.045)   # min/max half-extent of clutter
     include_robot: bool = False       # attach Franka (needs menagerie path)
     menagerie: str | None = None
+    # Newton solver budget. MuJoCo's defaults (100/50) are tuned for offline
+    # accuracy; under CUDA-graph capture the solver while-loop unrolls into
+    # iterations x ls_iterations conditional nodes, so defaults make graph
+    # replay SLOWER than eager (measured 18.6 vs 12.9 ms/step). MJX-tuned
+    # scenes ship 5/8; we default slightly higher for contact-rich clutter.
+    solver_iterations: int = 8
+    ls_iterations: int = 10
 
 
 def _furniture_slots(rng, spec, k):
@@ -132,7 +139,7 @@ def generate_room(spec: RoomSpec, out_path: str) -> str:
                 f'<camera name="corner" pos="{hx - 0.8:.2f} {-(hy - 0.8):.2f} 1.8" fovy="70"/>')
 
     xml = f"""<mujoco model="lpw_room_seed{spec.seed}">
-  <option timestep="0.005"/>
+  <option timestep="0.005" iterations="{spec.solver_iterations}" ls_iterations="{spec.ls_iterations}"/>
   {robot}
   <worldbody>
     {chr(10).join('    ' + b for b in body)}
