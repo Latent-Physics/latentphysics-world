@@ -52,6 +52,18 @@ Not a viewer of the world. An engine that *runs* it.
 > 它是训练**物理大模型**的基座——把物理放进**潜空间**去学习与推演,并可大规模并行;
 > 不是世界的观察者,而是*运行*世界的引擎。
 
+<div align="center">
+<img src="docs/media/architecture.svg" width="880" alt="LPW architecture: learning interface / worlds &amp; perception / physics core, with the closed loop between models, the world, and reality"/>
+</div>
+
+LPW sits between what you build and what you compute on. Above the box:
+your models, policies, and data engines. Below it: one consumer GPU today, a
+fleet tomorrow. Beside it — the part that matters most — the closed loop:
+models improve in the world, and the world refines itself from reality.
+
+> LPW 位于"你的应用"与"你的算力"之间:上面是你的模型、策略与数据引擎,下面是从单卡到
+> 舰队的算力;旁边是最关键的部分——**双向闭环**:模型在世界中变强,世界从现实中变准。
+
 ## What makes it different
 
 | | Pillar | 支柱 |
