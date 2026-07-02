@@ -31,6 +31,14 @@ class Config:
     timestep: float | None = None
     naconmax: int | None = None
     njmax: int | None = None
+    # Canonical contact ordering (fork feature): sorts the contact pool by
+    # (world, geom pair, position) each step, giving a stable, reproducible
+    # contact buffer order — useful for contact inspection, debugging, tests.
+    # NOTE: NOT yet bit-exact replay. Constraint-row assembly and solver
+    # reductions upstream still use float atomics (constraint.py:199/524/668,
+    # solver.py:1415/1515/1714/1838), leaving ~1e-9 replay noise. Full
+    # determinism is tracked as a fork work item.
+    canonical_contacts: bool = False
 
 
 def resolve_device(device: str = "auto") -> str:

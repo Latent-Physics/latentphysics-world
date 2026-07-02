@@ -63,8 +63,14 @@ def _auto_budgets(mjm, n_worlds: int) -> dict:
     naconmax = min(per_world * max(n_worlds, 1), 1 << 19)  # pooled across worlds
     return {
         "naconmax": naconmax,
-        # njmax is per world; ~4 constraint rows per pyramidal condim-3 contact
-        "njmax": min(max(4 * per_world, 128), 2048),
+        # njmax is per world; ~4 constraint rows per pyramidal condim-3 contact.
+        # Capped at 1024 as buffer hygiene. NOTE the separate hard engine limit
+        # we hit on consumer GPUs: with sleep enabled, the compact tiled solver
+        # allocates nv^2*4B of shared memory per block (nv=192 -> 172 KB vs the
+        # ~101 KB consumer-GPU cap) and fails with 'invalid argument',
+        # poisoning any CUDA graph capture in flight. High-nv (~>150) worlds
+        # with sleep need an upstream kernel fix (blocked hessian tiles).
+        "njmax": min(max(4 * per_world, 128), 1024),
         # convex-CCD (GJK/EPA) slots cost ~3 KB each. Demand is ~2-4 slots per
         # dynamic geom per world (measured ~64/world on a 32-object room), so
         # scale per world with margin but hard-cap total: the cap trades
@@ -169,6 +175,12 @@ class WarpEngine:
         mjm = mujoco.MjModel.from_xml_path(mjcf_path)
         if self.config.timestep is not None:
             mjm.opt.timestep = self.config.timestep
+        if self.config.canonical_contacts:
+            # fork feature: canonical contact ordering (stable contact buffer
+            # order). Must be set before the first step so graph capture
+            # includes the sort pass. See Config.canonical_contacts for the
+            # honest scope (not yet bit-exact replay).
+            mjw.set_deterministic(True)
         model = mjw.put_model(mjm)
         budgets = _auto_budgets(mjm, self.config.n_worlds)
         make_kw = {
