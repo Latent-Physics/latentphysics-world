@@ -1,30 +1,20 @@
-"""Environment layer (our IP) — BUILD, readiness report §7.
+"""Environment layer (our IP) — vectorized, GPU-resident, gym-style tasks.
 
-Manager-based, gym-style env layer (Isaac-Lab / mjlab paradigm) on top of the
-`Scene` facade. Composes observations, actions, rewards, resets, and domain
-randomization into vectorized environments for RL, with zero-copy torch tensors.
+    import latentphysics as lpw
+    from latentphysics.envs import FrankaReach, TaskConfig
+
+    scene = lpw.load_scene(FRANKA_MJCF, lpw.Config(n_worlds=2048))
+    env = FrankaReach(scene, TaskConfig(episode_len=200))
+    obs = env.reset()
+    obs, reward, done, info = env.step(action)   # torch tensors on cuda
+
+Design: zero-copy views into the engine, per-world auto-reset via the
+snapshot/restore branching primitive, no host round-trips in the loop.
+Manager-based composition (obs/reward/termination managers, mjlab-style)
+lands in R4; R1 keeps a lean subclass API (VecTask hooks).
 """
 
-from __future__ import annotations
+from .base import TaskConfig, VecTask
+from .franka_reach import FrankaReach
 
-__all__ = ["Env", "EnvConfig"]
-
-
-class EnvConfig:
-    """Declarative env config: managers for obs / action / reward / termination / DR."""
-
-    def __init__(self, **kw) -> None:
-        raise NotImplementedError("TODO(P5): manager-based config schema")
-
-
-class Env:
-    """Vectorized environment.
-
-    Planned API (gym-style, batched over n_worlds):
-        env = Env(EnvConfig(...))
-        obs = env.reset()
-        obs, reward, done, info = env.step(action)   # torch tensors, on device
-    """
-
-    def __init__(self, config: "EnvConfig") -> None:
-        raise NotImplementedError("TODO(P5): wire Scene + managers")
+__all__ = ["TaskConfig", "VecTask", "FrankaReach"]

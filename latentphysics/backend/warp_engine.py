@@ -49,14 +49,22 @@ def _auto_budgets(mjm, n_worlds: int) -> dict:
     contact-rich indoor scenes and for RSI anti-exploit guarantees. We scale
     with geom count; explicit Config values always win.
     """
-    ngeom = max(int(mjm.ngeom), 1)
-    per_world = min(max(16 * ngeom, 96), 2048)     # contacts per world
+    import numpy as np
+
+    # Only geoms that can actually collide matter — visual meshes
+    # (contype=0, conaffinity=0) must not inflate solver arrays: njmax sizes
+    # per-world constraint buffers that the solver sweeps EVERY step, so
+    # over-allocation is a direct throughput hit (measured 83-geom Franka
+    # scene: all-geom heuristic cost ~5x in step time).
+    ncol = int(np.count_nonzero((mjm.geom_contype | mjm.geom_conaffinity) != 0))
+    ncol = max(ncol, 1)
+    per_world = min(max(8 * ncol, 64), 1024)       # contacts per world
     return {
         # naconmax is the cap across ALL worlds combined
         "naconmax": per_world * max(n_worlds, 1),
         # njmax is per world; ~4 constraint rows per pyramidal condim-3 contact
         # plus headroom for joint limits/equality
-        "njmax": min(max(6 * per_world, 256), 8192),
+        "njmax": min(max(4 * per_world, 128), 4096),
     }
 
 
@@ -69,6 +77,9 @@ class Scene:
     model: Any          # mujoco_warp Model
     data: Any           # mujoco_warp Data
     n_worlds: int = 1
+    _graph: Any = None      # captured CUDA graph of a step sequence
+    _graph_n: int = 0       # substep count the graph was captured for
+    _fwd_graph: Any = None  # captured CUDA graph of forward() (used by resets)
 
     # --- stepping -------------------------------------------------------------
     def step(self, n: int = 1) -> "Scene":
@@ -79,6 +90,12 @@ class Scene:
     def reset(self) -> "Scene":
         """Reset all worlds to the model's initial state."""
         self.engine._reset(self)
+        return self
+
+    def forward(self) -> "Scene":
+        """Recompute derived quantities (kinematics, sensors) without
+        advancing time — call after writing qpos/qvel directly."""
+        self.engine._forward(self)
         return self
 
     # --- state (zero-copy torch views, shaped (n_worlds, ...)) ----------------
@@ -158,13 +175,53 @@ class WarpEngine:
 
     # --- internals ------------------------------------------------------------
     def _step(self, scene: Scene, n: int) -> None:
+        """Advance n physics steps.
+
+        Hot path uses a captured CUDA graph of the whole n-step sequence:
+        mujoco_warp's step launches hundreds of kernels, and Python-driven
+        launches dominate wall-clock otherwise (~40x slower measured). Capture
+        once per (scene, n); replay every call. Falls back to eager launches
+        if capture is unsupported.
+        """
         mjw, wp = self._mjw, self._wp
-        for _ in range(n):
-            mjw.step(scene.model, scene.data)
+        if scene._graph is not None and scene._graph_n == n:
+            wp.capture_launch(scene._graph)
+        else:
+            try:
+                # warm up once eagerly so all modules are JIT-compiled,
+                # then capture the sequence
+                for _ in range(n):
+                    mjw.step(scene.model, scene.data)
+                with wp.ScopedCapture() as cap:
+                    for _ in range(n):
+                        mjw.step(scene.model, scene.data)
+                scene._graph, scene._graph_n = cap.graph, n
+            except Exception:
+                scene._graph, scene._graph_n = None, 0
+                for _ in range(n):
+                    mjw.step(scene.model, scene.data)
         wp.synchronize()
 
     def _reset(self, scene: Scene) -> None:
         self._mjw.reset_data(scene.model, scene.data)
+
+    def _forward(self, scene: Scene) -> None:
+        """Recompute derived state. Graph-captured like _step — resets call this
+        every episode boundary, and an eager forward (~hundreds of launches)
+        would halve short-episode training throughput (measured)."""
+        wp, mjw = self._wp, self._mjw
+        if scene._fwd_graph is not None:
+            wp.capture_launch(scene._fwd_graph)
+        else:
+            try:
+                mjw.forward(scene.model, scene.data)  # warmup/JIT
+                with wp.ScopedCapture() as cap:
+                    mjw.forward(scene.model, scene.data)
+                scene._fwd_graph = cap.graph
+            except Exception:
+                scene._fwd_graph = None
+                mjw.forward(scene.model, scene.data)
+        wp.synchronize()
 
     def _to_torch(self, warp_array):
         """Zero-copy view of a warp array as a torch tensor (GPU)."""
