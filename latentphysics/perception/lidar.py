@@ -68,7 +68,10 @@ class Lidar:
         self._dist = wp.zeros((self.n, self.n_rays), dtype=wp.float32, device="cuda")
         self._geomid = wp.zeros((self.n, self.n_rays), dtype=wp.int32, device="cuda")
         self._normal = wp.zeros((self.n, self.n_rays), dtype=wp.vec3, device="cuda")
-        self._exclude = wp.array(-np.ones(self.n, dtype=np.int32), dtype=wp.int32, device="cuda")
+        # engine contract: bodyexclude is PER-RAY, shape (nray,) — sizing it
+        # per-world reads out of bounds and silently "excludes" beams based on
+        # whatever memory follows (order-dependent phantom misses)
+        self._exclude = wp.array(-np.ones(self.n_rays, dtype=np.int32), dtype=wp.int32, device="cuda")
         self._pnt_t = wp.to_torch(self._pnt)
         self._vec_t = wp.to_torch(self._vec)
 

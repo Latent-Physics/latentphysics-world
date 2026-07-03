@@ -168,6 +168,21 @@ class WarpEngine:
         self.config = config or Config()
         self.device = resolve_device(self.config.device)
         self._mujoco, self._wp, self._mjw = _require_engine()
+        # Unify torch onto WARP's CUDA stream. Zero-copy views mean torch
+        # writes (ctrl, lidar ray buffers, ...) and warp kernel reads would
+        # otherwise race across two streams — measured as LiDAR beams reading
+        # half-written direction buffers (72% phantom misses). Direction
+        # matters: torch's default stream is the CUDA *legacy* stream, which
+        # cannot begin graph capture — putting warp on it silently disables
+        # the CUDA-graph hot path. Warp's stream is non-default, so torch
+        # adopts it instead: ordering becomes implicit AND capture still works.
+        try:
+            import torch
+            if torch.cuda.is_available():
+                ws = self._wp.get_stream("cuda")
+                torch.cuda.set_stream(torch.cuda.ExternalStream(ws.cuda_stream))
+        except Exception:
+            pass  # non-CUDA host: nothing to unify
 
     def load_mjcf(self, mjcf_path: str) -> Scene:
         """Compile an MJCF and place it on the GPU engine, batched to n_worlds."""
