@@ -36,6 +36,13 @@ dev = [
     "pip-licenses",    # P0 license-scan gate
     "ruff",
 ]
+# Gallery-clip recording (examples/*.py --record): offscreen replay + webp encode
+demos = [
+    "imageio",
+    "imageio-ffmpeg",
+    "matplotlib",
+    "Pillow",
+]
 
 [tool.setuptools.packages.find]
 include = ["latentphysics", "latentphysics.*"]
