@@ -68,14 +68,14 @@ behavior with physically checkable predicates — all enforced by committed test
 |---|---|---|
 | [Manipulation: pick & place](examples/franka_pick_place.py) | [Manipulation: stack](examples/franka_stack.py) | [Manipulation: push](examples/franka_push.py) |
 | <img src="docs/media/franka_pick_place.webp" width="240"> | <img src="docs/media/franka_stack.webp" width="240"> | <img src="docs/media/franka_push.webp" width="240"> |
-| [Manipulation: grasp & lift](examples/franka_cube_grasp.py) | [Rigid: collision tower](examples/collision_tower.py) | [Rigid: contype masks](examples/contype_demo.py) |
-| <img src="docs/media/franka_cube_grasp.webp" width="240"> | <img src="docs/media/collision_tower.webp" width="240"> | <img src="docs/media/contype_masks.webp" width="240"> |
-| [Worlds: procedural room](examples/procedural_room.py) | [Worlds: articulated furniture](examples/articulated_room.py) | [Assets: real CC0 meshes](examples/real_assets.py) |
-| <img src="docs/media/procedural_room.webp" width="240"> | <img src="docs/media/articulated_room.webp" width="240"> | <img src="docs/media/real_assets.webp" width="240"> |
-| [Assets: GLB scene import](examples/glb_import.py) | [Assets: convex decomposition](latentphysics/assets/__init__.py) | [Perception: depth + segmentation](latentphysics/perception/camera.py) |
-| <img src="docs/media/glb_import.webp" width="240"> | <img src="docs/media/convex_decomposition.webp" width="240"> | <img src="docs/media/depth_segmentation.webp" width="240"> |
-| [Perception: lidar point cloud](latentphysics/perception/lidar.py) | [Physics: 8192 parallel worlds](tests/test_throughput_gpu.py) | |
-| <img src="docs/media/lidar_pointcloud.webp" width="240"> | <img src="docs/media/hero.png" width="240"> | |
+| [Manipulation: grasp & lift](examples/franka_cube_grasp.py) | [Manipulation: open drawer](examples/franka_open_drawer_arm.py) | [Rigid: collision tower](examples/collision_tower.py) |
+| <img src="docs/media/franka_cube_grasp.webp" width="240"> | <img src="docs/media/franka_open_drawer.webp" width="240"> | <img src="docs/media/collision_tower.webp" width="240"> |
+| [Rigid: contype masks](examples/contype_demo.py) | [Worlds: procedural room](examples/procedural_room.py) | [Worlds: articulated furniture](examples/articulated_room.py) |
+| <img src="docs/media/contype_masks.webp" width="240"> | <img src="docs/media/procedural_room.webp" width="240"> | <img src="docs/media/articulated_room.webp" width="240"> |
+| [Assets: real CC0 meshes](examples/real_assets.py) | [Assets: GLB scene import](examples/glb_import.py) | [Assets: convex decomposition](latentphysics/assets/__init__.py) |
+| <img src="docs/media/real_assets.webp" width="240"> | <img src="docs/media/glb_import.webp" width="240"> | <img src="docs/media/convex_decomposition.webp" width="240"> |
+| [Perception: depth + segmentation](latentphysics/perception/camera.py) | [Perception: lidar point cloud](latentphysics/perception/lidar.py) | [Physics: 8192 parallel worlds](tests/test_throughput_gpu.py) |
+| <img src="docs/media/depth_segmentation.webp" width="240"> | <img src="docs/media/lidar_pointcloud.webp" width="240"> | <img src="docs/media/hero.png" width="240"> |
 
 And the whole thing speaks PyTorch:
 
