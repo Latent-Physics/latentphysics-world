@@ -28,6 +28,11 @@ runs/
 wandb/
 *.usdc
 *.usdz
+
+# fetched third-party meshes (regenerate with scripts/fetch_assets.py);
+# keep the committed license manifest
+assets/library/**
+!assets/library/NOTICE.md
 # generated media (except the README gallery in docs/media/)
 *.mp4
 *.gif

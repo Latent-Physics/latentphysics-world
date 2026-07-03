@@ -59,13 +59,25 @@ def _sanitize(name: str) -> str:
 
 
 def _rgba_trimesh(mesh) -> str:
-    """Mean vertex color (how GLB color data survives a trimesh round-trip),
-    falling back to the PBR base color, then neutral gray."""
+    """A single representative color for the mesh. MuJoCo's renderer takes no
+    UV texture from imported meshes, so we collapse the asset's appearance to
+    one rgba: vertex colors if present, else the mean of the diffuse texture
+    (this is what carries a Poly Haven asset's real hue), else the PBR base
+    color, else neutral gray."""
+    def _tex_mean():
+        mat = mesh.visual.material
+        img = getattr(mat, "baseColorTexture", None) or getattr(mat, "image", None)
+        arr = np.asarray(img, dtype=float)          # PIL image -> HxWx(3|4)
+        c = arr.reshape(-1, arr.shape[-1]).mean(axis=0)
+        return c if c.shape[0] >= 4 else np.append(c, 255.0)
+
     for get in (lambda: np.asarray(mesh.visual.vertex_colors, dtype=float).mean(axis=0),
+                _tex_mean,
                 lambda: np.asarray(mesh.visual.material.main_color, dtype=float)):
         try:
             c = get()[:4] / 255.0
-            return "%.3f %.3f %.3f %.3f" % (c[0], c[1], c[2], max(c[3], 0.05))
+            if np.isfinite(c).all() and c[:3].sum() > 0.05:
+                return "%.3f %.3f %.3f %.3f" % (c[0], c[1], c[2], max(c[3], 0.05))
         except Exception:
             continue
     return "0.7 0.7 0.7 1"
