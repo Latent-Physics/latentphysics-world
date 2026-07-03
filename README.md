@@ -56,15 +56,19 @@ have — one consumer GPU today, a fleet tomorrow.
 ## Gallery — real runs, real numbers
 
 LPW is early and moving fast — and it already runs. Every clip below is an
-actual simulation from this repo on a single consumer GPU (RTX 5070 Ti),
-backed by committed tests. Nothing staged, nothing rendered offline.
+actual simulation from this repo on a single consumer GPU (RTX 5070 Ti), and
+every label links to the code that produced it. Nothing staged, nothing
+rendered offline: the reach policy evaluates at **100% success**, contact
+forces match the reference engine to **0.00%**, and the manipulation scene
+steps at **8M+ physics steps/s** across 8192 worlds — all enforced by
+committed tests.
 
 | | | |
 |---|---|---|
-| **Trained policy — 100% success** PPO on 2048 parallel worlds; deterministic eval 100%. ([train](examples/train_franka_reach.py)) | **Procedural indoor worlds** seeded rooms: walls, furniture, clutter, cameras. ([code](latentphysics/assets/scene_gen.py)) | **Asset pipeline** concave mesh → CoACD convex parts → simulation. ([code](latentphysics/assets/__init__.py)) |
-| <img src="docs/media/policy_reach.webp" width="240"/> | <img src="docs/media/procedural_room.webp" width="240"/> | <img src="docs/media/convex_decomposition.webp" width="240"/> |
-| **GPU depth + segmentation** native batch renderer, meters-true depth. ([code](latentphysics/perception/camera.py)) | **Batched LiDAR** 5,760 beams × N worlds in one launch → point clouds. ([code](latentphysics/perception/lidar.py)) | **8M+ physics steps/s** 8192 contact-accurate worlds on one GPU; contact forces match the reference engine to 0.00%. ([test](tests/test_envs_gpu.py)) |
-| <img src="docs/media/depth_segmentation.webp" width="240"/> | <img src="docs/media/lidar_pointcloud.webp" width="240"/> | <img src="docs/media/hero.png" width="240"/> |
+| [RL: franka reach](examples/train_franka_reach.py) | [Worlds: procedural room](latentphysics/assets/scene_gen.py) | [Assets: convex decomposition](latentphysics/assets/__init__.py) |
+| <img src="docs/media/policy_reach.webp" width="240"> | <img src="docs/media/procedural_room.webp" width="240"> | <img src="docs/media/convex_decomposition.webp" width="240"> |
+| [Perception: depth + segmentation](latentphysics/perception/camera.py) | [Perception: lidar point cloud](latentphysics/perception/lidar.py) | [Physics: 8192 parallel worlds](tests/test_throughput_gpu.py) |
+| <img src="docs/media/depth_segmentation.webp" width="240"> | <img src="docs/media/lidar_pointcloud.webp" width="240"> | <img src="docs/media/hero.png" width="240"> |
 
 And the whole thing speaks PyTorch:
 
