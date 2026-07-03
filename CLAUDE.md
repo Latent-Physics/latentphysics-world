@@ -12,31 +12,14 @@ may use FEA solvers and **learned simulation** (MeshGraphNets-style
 surrogates). Learning is a sanctioned *simulation method*, never anything
 that outputs behavior.
 
-## Three questions every change must pass
+## The test every change must pass
 
-1. Does it make simulation more **accurate**, more **parallel/faster**,
-   cover **whitelisted new physics** (via FEA or learned solvers), or make
-   simulatable **worlds richer**? Worlds-richer means procedural/classical
-   generation and imported assets; generative-model content (LLM scene
-   composition, diffusion assets, neural sensors) needs explicit owner
-   sign-off. If none of the four — reject.
-2. Does it produce, contain, **execute, download, or depend on** a
-   policy / skill / agent / behavior — in code, tests, CI, or examples?
-   If yes — reject, even as an "example" or "validation tool" (PPO
-   precedent: 9f3f072). Task solvability is demonstrated by scripted
-   kinematic replay, never by running a policy artifact.
-3. If it involves learning, ALL of the following or reject:
-   - the learned artifact is a **drop-in solver** behind the engine
-     stepper's API — same inputs/outputs as the classical solver it
-     substitutes, consumable ONLY inside the step — or a bounded
-     calibration residual over physical parameters. An artifact usable
-     outside the stepper is a user model, not a solver;
-   - validated against a classical reference, with owner-approved numeric
-     gates (rollout error, conservation drift, boundary-force error)
-     committed as tests BEFORE the solver merges;
-   - trained on data from fixed scripted or randomized action
-     distributions — no learned, optimized, or feedback-adaptive data
-     collection ("adaptive data scheduling" is an exploration policy).
+Does it make simulation more **accurate**, more **parallel/faster**,
+cover **whitelisted new physics** (via FEA or learned solvers), or make
+simulatable **worlds richer**? Worlds-richer means procedural/classical
+generation and imported assets; generative-model content (LLM scene
+composition, diffusion assets, neural sensors) needs explicit owner
+sign-off. If none of the four — reject.
 
 ## Hard lines around the rigid core
 
@@ -74,7 +57,8 @@ that outputs behavior.
 
 - RL algorithms, policy/value networks, agents, skill or curriculum
   learning, LLM-in-the-loop task generation — anything that outputs
-  behavior rather than physics
+  behavior rather than physics, even as an "example" or "validation
+  tool" (PPO precedent: 9f3f072)
 - Training pipelines for user models (world models included): we ship the
   simulator they train on, not the training
 - Any README claim not backed by a committed test or a reproducible
