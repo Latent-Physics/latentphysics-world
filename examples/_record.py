@@ -66,7 +66,19 @@ def record_webp(mjcf_path, qpos_traj, out_name, cam=None, every=3, fps=15,
         r.update_scene(d, camera=c)
         frames.append(_downscale(r.render()).copy())
     r.close()
+    return save_frames(frames, out_name, fps=fps, quality=quality, media_dir=media_dir)
 
+
+def save_frames(frames, out_name, fps=15, quality=70, media_dir=None):
+    """Encode a list of HxWx3 uint8 frames to docs/media/<out_name>.webp
+    (gif fallback). Used by clips that produce image frames directly —
+    perception overlays, matplotlib point clouds — not a qpos replay."""
+    import imageio.v2 as imageio
+    import imageio_ffmpeg
+
+    media_dir = media_dir or os.path.join(
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "docs", "media")
+    os.makedirs(media_dir, exist_ok=True)
     tmp = os.path.join(tempfile.gettempdir(), out_name + ".mp4")
     imageio.mimsave(tmp, frames, fps=fps, quality=8)
     out = os.path.join(media_dir, out_name + ".webp")
