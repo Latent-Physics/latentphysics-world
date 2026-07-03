@@ -21,14 +21,11 @@ HALF = 0.025          # cube half-extent
 
 def build_scene() -> str:
     """Franka + two free cubes on the table (own scene, written by the panda)."""
+    # include mjx_scene (not mjx_panda): brings the arm PLUS the blue
+    # checkerboard groundplane + skybox + lighting, matching pick & place
     xml = f"""<mujoco model="franka_stack">
-  <include file="mjx_panda.xml"/>
-  <option timestep="0.005" iterations="10" ls_iterations="10"/>
+  <include file="mjx_scene.xml"/>
   <worldbody>
-    <light name="key" directional="true" pos="0 0 3" dir="-0.3 0.2 -0.9"
-           diffuse="0.8 0.78 0.75" castshadow="true"/>
-    <geom name="floor" type="plane" size="3 3 0.1" rgba="0.72 0.66 0.58 1"
-          contype="1" conaffinity="1"/>
     <body name="cubeA" pos="0.5 -0.12 {HALF}"><freejoint/>
       <geom type="box" size="{HALF} {HALF} {HALF}" rgba="0.2 0.7 0.3 1" mass="0.05"
             condim="4" friction="1 0.05 0.001" contype="1" conaffinity="1"/></body>
