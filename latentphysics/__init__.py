@@ -10,14 +10,13 @@ Public API (stable surface we own; the engine is wrapped, never exposed raw):
     for _ in range(1000):
         scene.step()
 
-Layers (all under `latentphysics/`, all our IP):
-    backend/      thin adapter over the mujoco_warp engine (CHANGE)
-    assets/       USD/GLB -> MJCF + convex decomposition (BUILD)
-    perception/   LiDAR / point cloud / segmentation (BUILD)
-    nav/          occupancy grid / planning / avoidance (BUILD)
-    envs/         manager-based env layer, gym-style (BUILD)
-    domain_rand/  domain randomization + sim-to-real calibration (BUILD)
-    broadphase/   large-scene BVH broadphase (CHANGE/BUILD)
+Layers (all under `latentphysics/`, all our IP — roles in CLAUDE.md):
+    backend/      thin adapter over the mujoco_warp engine
+    assets/       procedural worlds, GLB/USD import, convex decomposition
+    perception/   LiDAR / point cloud / depth / segmentation
+    envs/         batched task containers + benchmark verifiers
+    domain_rand/  domain randomization + sim-to-real calibration
+    broadphase/   large-scene BVH broadphase
 """
 
 from .version import __version__

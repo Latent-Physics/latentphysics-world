@@ -12,7 +12,7 @@ import pytest
 def test_package_imports():
     lpw = importlib.import_module("latentphysics")
     assert lpw.__version__
-    for sub in ["backend", "assets", "perception", "nav", "envs", "domain_rand", "broadphase"]:
+    for sub in ["backend", "assets", "perception", "envs", "domain_rand", "broadphase"]:
         importlib.import_module(f"latentphysics.{sub}")
 
 
