@@ -49,7 +49,7 @@ Not a viewer of the world. An engine that *runs* it.
 > 并行物理世界,仿真中发生的一切可迁移到真实硬件——不是世界的观察者,而是*运行*世界的引擎。
 
 <div align="center">
-<img src="docs/media/architecture.svg" width="820" alt="LPW architecture: simulation interface / worlds &amp; perception / physics core — your applications above, your compute below"/>
+<img src="docs/media/architecture.svg" width="820" alt="LPW architecture: simulation interface / physics / render / compiler — your applications above, your compute below"/>
 </div>
 
 LPW sits between what you build and what you compute on: above the box, your

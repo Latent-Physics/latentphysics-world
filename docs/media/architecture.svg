@@ -1,8 +1,8 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="900" height="620" viewBox="0 0 900 620" font-family="system-ui,'Segoe UI',Helvetica,Arial,sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="690" viewBox="0 0 900 690" font-family="system-ui,'Segoe UI',Helvetica,Arial,sans-serif">
 <defs>
 <marker id="ag" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1 1L9 5L1 9" fill="none" stroke="#9ca3af" stroke-width="1.6" stroke-linecap="round"/></marker>
 </defs>
-<rect width="900" height="620" fill="#ffffff"/>
+<rect width="900" height="690" fill="#ffffff"/>
 
 <text x="450" y="20" text-anchor="middle" font-size="12" fill="#9ca3af">what you build · 你的应用</text>
 <g fill="#ffffff" stroke="#d1d5db">
@@ -21,29 +21,35 @@
 <line x1="674" y1="68" x2="674" y2="94" marker-end="url(#ag)"/>
 </g>
 
-<rect x="100" y="100" width="700" height="420" rx="16" fill="#fbfaf8" stroke="#d8d6d0" stroke-width="1.2"/>
-<text x="450" y="132" text-anchor="middle" font-size="20" font-weight="600" fill="#111827">Latent Physics World</text>
-<text x="450" y="152" text-anchor="middle" font-size="12" fill="#9ca3af">a high-precision, high-speed physics simulator for physical AI</text>
+<rect x="100" y="100" width="700" height="470" rx="16" fill="#fbfaf8" stroke="#d8d6d0" stroke-width="1.2"/>
+<text x="450" y="130" text-anchor="middle" font-size="20" font-weight="600" fill="#111827">Latent Physics World</text>
+<text x="450" y="150" text-anchor="middle" font-size="12" fill="#9ca3af">a high-precision, high-speed physics simulator for physical AI</text>
 
-<rect x="128" y="170" width="644" height="100" rx="10" fill="#dbeafe" stroke="#93c5fd"/>
-<text x="148" y="198" font-size="16" font-weight="600" fill="#1e3a8a">Simulation interface</text>
-<text x="752" y="198" text-anchor="end" font-size="12.5" fill="#1e3a8a" opacity="0.75">仿真接口</text>
-<text x="148" y="224" font-size="12.5" fill="#1e40af">MJCF world loading · vectorized batched API · zero-copy PyTorch tensors</text>
-<text x="148" y="246" font-size="12.5" fill="#1e40af">world snapshot / branch / restore · auto-verified benchmark tasks</text>
+<rect x="128" y="164" width="644" height="88" rx="10" fill="#dbeafe" stroke="#93c5fd"/>
+<text x="148" y="188" font-size="15.5" font-weight="600" fill="#1e3a8a">Simulation interface</text>
+<text x="752" y="188" text-anchor="end" font-size="12.5" fill="#1e3a8a" opacity="0.75">仿真接口</text>
+<text x="148" y="212" font-size="12.5" fill="#1e40af">vectorized batched API · zero-copy PyTorch tensors · snapshot / branch / restore</text>
+<text x="148" y="234" font-size="12.5" fill="#1e40af">procedural indoor worlds · asset pipeline (mesh → convex / SDF) · benchmark tasks</text>
 
-<rect x="128" y="284" width="644" height="100" rx="10" fill="#dcfce7" stroke="#86efac"/>
-<text x="148" y="312" font-size="16" font-weight="600" fill="#14532d">Worlds &amp; perception</text>
-<text x="752" y="312" text-anchor="end" font-size="12.5" fill="#14532d" opacity="0.75">世界与感知</text>
-<text x="148" y="338" font-size="12.5" fill="#166534">procedural indoor scenes · asset pipeline: mesh → convex parts / GPU SDF</text>
-<text x="148" y="360" font-size="12.5" fill="#166534">batched LiDAR · depth · segmentation (native GPU renderer)</text>
+<rect x="128" y="264" width="644" height="88" rx="10" fill="#fef3c7" stroke="#fcd34d"/>
+<text x="148" y="288" font-size="15.5" font-weight="600" fill="#92400e">Physics</text>
+<text x="752" y="288" text-anchor="end" font-size="12.5" fill="#92400e" opacity="0.75">物理</text>
+<text x="148" y="312" font-size="12.5" fill="#a16207">contact-accurate rigid dynamics · Newton solver · 8192+ parallel worlds</text>
+<text x="148" y="334" font-size="12.5" fill="#a16207">physics sentinels · contact / constraint budgeting · built on mujoco_warp (Apache-2.0)</text>
 
-<rect x="128" y="398" width="644" height="100" rx="10" fill="#fef3c7" stroke="#fcd34d"/>
-<text x="148" y="426" font-size="16" font-weight="600" fill="#92400e">Physics core</text>
-<text x="752" y="426" text-anchor="end" font-size="12.5" fill="#92400e" opacity="0.75">物理内核</text>
-<text x="148" y="452" font-size="12.5" fill="#a16207">contact-accurate rigid dynamics · 8192+ parallel worlds · CUDA-graph stepping</text>
-<text x="148" y="474" font-size="12.5" fill="#a16207">physics sentinels (fidelity guards) · built on mujoco_warp (Apache-2.0)</text>
+<rect x="128" y="364" width="644" height="88" rx="10" fill="#ccfbf1" stroke="#5eead4"/>
+<text x="148" y="388" font-size="15.5" font-weight="600" fill="#115e59">Render</text>
+<text x="752" y="388" text-anchor="end" font-size="12.5" fill="#115e59" opacity="0.75">渲染</text>
+<text x="148" y="412" font-size="12.5" fill="#0f766e">native GPU batch renderer — BVH ray-cast RGB · depth · segmentation, all worlds at once</text>
+<text x="148" y="434" font-size="12.5" fill="#0f766e">batched LiDAR (multi-ray) · point clouds · camera sensors</text>
 
-<line x1="450" y1="520" x2="450" y2="542" stroke="#9ca3af" stroke-width="1.4" marker-end="url(#ag)"/>
-<rect x="100" y="548" width="700" height="52" rx="10" fill="#f3f4f6" stroke="#e5e7eb"/>
-<text x="450" y="579" text-anchor="middle" font-size="13.5" fill="#4b5563">your compute — one consumer GPU today · a multi-GPU fleet tomorrow · 单卡起步,舰队扩展</text>
+<rect x="128" y="464" width="644" height="88" rx="10" fill="#f3e8ff" stroke="#d8b4fe"/>
+<text x="148" y="488" font-size="15.5" font-weight="600" fill="#6b21a8">Compiler / kernel runtime</text>
+<text x="752" y="488" text-anchor="end" font-size="12.5" fill="#6b21a8" opacity="0.75">编译层</text>
+<text x="148" y="512" font-size="12.5" fill="#7e22ce">NVIDIA Warp — Python kernels JIT-compiled to CUDA · CUDA-graph capture &amp; replay</text>
+<text x="148" y="534" font-size="12.5" fill="#7e22ce">unified torch / warp stream · zero-copy interop</text>
+
+<line x1="450" y1="570" x2="450" y2="592" stroke="#9ca3af" stroke-width="1.4" marker-end="url(#ag)"/>
+<rect x="100" y="598" width="700" height="52" rx="10" fill="#f3f4f6" stroke="#e5e7eb"/>
+<text x="450" y="629" text-anchor="middle" font-size="13.5" fill="#4b5563">your compute — one consumer GPU today · a multi-GPU fleet tomorrow · 单卡起步,舰队扩展</text>
 </svg>
