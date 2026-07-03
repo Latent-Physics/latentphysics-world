@@ -4,7 +4,7 @@
 </defs>
 <rect width="900" height="690" fill="#ffffff"/>
 
-<text x="450" y="20" text-anchor="middle" font-size="12" fill="#9ca3af">what you build · 你的应用</text>
+<text x="450" y="20" text-anchor="middle" font-size="12" fill="#9ca3af">what you build</text>
 <g fill="#ffffff" stroke="#d1d5db">
 <rect x="126" y="28" width="200" height="40" rx="9"/>
 <rect x="350" y="28" width="200" height="40" rx="9"/>
@@ -27,29 +27,25 @@
 
 <rect x="128" y="164" width="644" height="88" rx="10" fill="#dbeafe" stroke="#93c5fd"/>
 <text x="148" y="188" font-size="15.5" font-weight="600" fill="#1e3a8a">Simulation interface</text>
-<text x="752" y="188" text-anchor="end" font-size="12.5" fill="#1e3a8a" opacity="0.75">仿真接口</text>
 <text x="148" y="212" font-size="12.5" fill="#1e40af">vectorized batched API · zero-copy PyTorch tensors · snapshot / branch / restore</text>
 <text x="148" y="234" font-size="12.5" fill="#1e40af">procedural indoor worlds · asset pipeline (mesh → convex / SDF) · benchmark tasks</text>
 
 <rect x="128" y="264" width="644" height="88" rx="10" fill="#fef3c7" stroke="#fcd34d"/>
 <text x="148" y="288" font-size="15.5" font-weight="600" fill="#92400e">Physics</text>
-<text x="752" y="288" text-anchor="end" font-size="12.5" fill="#92400e" opacity="0.75">物理</text>
 <text x="148" y="312" font-size="12.5" fill="#a16207">contact-accurate rigid dynamics · Newton solver · 8192+ parallel worlds</text>
 <text x="148" y="334" font-size="12.5" fill="#a16207">physics sentinels · contact / constraint budgeting · built on mujoco_warp (Apache-2.0)</text>
 
 <rect x="128" y="364" width="644" height="88" rx="10" fill="#ccfbf1" stroke="#5eead4"/>
 <text x="148" y="388" font-size="15.5" font-weight="600" fill="#115e59">Render</text>
-<text x="752" y="388" text-anchor="end" font-size="12.5" fill="#115e59" opacity="0.75">渲染</text>
 <text x="148" y="412" font-size="12.5" fill="#0f766e">native GPU batch renderer — BVH ray-cast RGB · depth · segmentation, all worlds at once</text>
 <text x="148" y="434" font-size="12.5" fill="#0f766e">batched LiDAR (multi-ray) · point clouds · camera sensors</text>
 
 <rect x="128" y="464" width="644" height="88" rx="10" fill="#f3e8ff" stroke="#d8b4fe"/>
 <text x="148" y="488" font-size="15.5" font-weight="600" fill="#6b21a8">Compiler / kernel runtime</text>
-<text x="752" y="488" text-anchor="end" font-size="12.5" fill="#6b21a8" opacity="0.75">编译层</text>
 <text x="148" y="512" font-size="12.5" fill="#7e22ce">NVIDIA Warp — Python kernels JIT-compiled to CUDA · CUDA-graph capture &amp; replay</text>
 <text x="148" y="534" font-size="12.5" fill="#7e22ce">unified torch / warp stream · zero-copy interop</text>
 
 <line x1="450" y1="570" x2="450" y2="592" stroke="#9ca3af" stroke-width="1.4" marker-end="url(#ag)"/>
 <rect x="100" y="598" width="700" height="52" rx="10" fill="#f3f4f6" stroke="#e5e7eb"/>
-<text x="450" y="629" text-anchor="middle" font-size="13.5" fill="#4b5563">your compute — one consumer GPU today · a multi-GPU fleet tomorrow · 单卡起步,舰队扩展</text>
+<text x="450" y="629" text-anchor="middle" font-size="13.5" fill="#4b5563">your compute — one consumer GPU today · a multi-GPU fleet tomorrow</text>
 </svg>

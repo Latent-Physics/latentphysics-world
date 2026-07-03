@@ -1,7 +1,7 @@
 """Large-scene broadphase (our IP) — CHANGE/BUILD, readiness report §4①.
 
-The engine's stock broadphase is SAP/NxN (O(n^2)); "满屋家具" (100-200+ geoms)
-hits a performance cliff. This adds a BVH broadphase with static/dynamic
+The engine's stock broadphase is SAP/NxN (O(n^2)); fully furnished rooms
+(100-200+ geoms) hit a performance cliff. This adds a BVH broadphase with static/dynamic
 separation: static furniture builds an AABB tree once (cached); only dynamic
 bodies (arm / mobile base) do incremental queries.
 
