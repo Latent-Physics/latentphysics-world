@@ -78,6 +78,22 @@ def test_initial_penetration_clean_scene():
     assert initial_penetration(_model(xml)).ok
 
 
+def test_import_strict_raises_on_defect(tmp_path):
+    trimesh = pytest.importorskip("trimesh")
+    pytest.importorskip("coacd")
+    from latentphysics.assets.import_3d import ImportSpec, import_glb
+
+    # near-zero density -> sub-threshold mass on the dynamic body: the wired
+    # validate_model check must surface it, and strict must turn it fatal
+    s = trimesh.Scene()
+    s.add_geometry(trimesh.creation.box(extents=(0.2, 0.2, 0.2)), node_name="obj")
+    glb = str(tmp_path / "light.glb")
+    s.export(glb)
+    spec = ImportSpec(up="z", dynamic=("obj",), density=1e-4, strict=True)
+    with pytest.raises(ValueError):
+        import_glb(glb, str(tmp_path / "out"), name="light", spec=spec)
+
+
 def test_convex_decompose_rejects_empty_mesh():
     trimesh = pytest.importorskip("trimesh")
     pytest.importorskip("coacd")

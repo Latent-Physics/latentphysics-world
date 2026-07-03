@@ -41,6 +41,8 @@ class ImportSpec:
     density: float = 400.0         # dynamic-body geom density (kg/m^3)
     solver_iterations: int = 8
     ls_iterations: int = 10
+    validate: bool = True          # run structural validity check on the output
+    strict: bool = False           # raise on validity issues instead of warning
 
 
 @dataclass
@@ -95,8 +97,11 @@ def compose_mjcf(objects, out_dir: str, name: str, spec: ImportSpec) -> str:
 
         hulls = convex_decompose(world, threshold=spec.threshold,
                                  max_hulls=spec.max_hulls)
+        # visual geom carries NO mass: without this it contributes inertia at
+        # MuJoCo's default density (1000) and silently overrides spec.density,
+        # so every dynamic body's mass came from the render mesh, not physics
         geoms = [f'<geom type="mesh" mesh="{base}_v" rgba="{obj.rgba}" '
-                 f'contype="0" conaffinity="0" group="2"/>']
+                 f'contype="0" conaffinity="0" group="2" mass="0"/>']
         for i, part in enumerate(hulls):
             fn = f"{base}_c{i}.obj"
             trimesh.Trimesh(vertices=part.vertices, faces=part.faces).export(
@@ -141,6 +146,19 @@ def compose_mjcf(objects, out_dir: str, name: str, spec: ImportSpec) -> str:
     path = os.path.join(out_dir, f"{name}.xml")
     with open(path, "w") as f:
         f.write(xml)
+
+    # structural body-check on the compiled result: a ghost body or a
+    # near-singular inertia is far cheaper to catch here than as a NaN mid-sim
+    if spec.validate:
+        import mujoco
+
+        from .validate import validate_model
+        report = validate_model(mujoco.MjModel.from_xml_path(path))
+        if not report.ok:
+            if spec.strict:
+                raise ValueError(f"imported scene failed validation:\n{report}")
+            import warnings
+            warnings.warn(f"imported scene has validity issues:\n{report}", stacklevel=2)
     return path
 
 
