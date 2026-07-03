@@ -86,6 +86,10 @@ def main():
     top_z = traj[-1][2 + 7 * (LAYERS * PER_LAYER - 1)]
     print(f"simulated {args.steps} steps on GPU; top-layer box final z = {top_z:.3f} "
           f"({'toppled' if top_z < 0.35 else 'still standing'})")
+    import torch
+    assert torch.isfinite(scene.qpos()).all(), "tower sim went non-finite"
+    # the top ring rests at z=0.495 when standing; 0.35 is a real "toppled"
+    assert top_z < 0.35, f"ball failed to topple the tower: top-layer z = {top_z:.3f}"
 
     if args.record:
         from _record import record_webp
