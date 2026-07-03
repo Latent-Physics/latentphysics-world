@@ -71,6 +71,8 @@ committed tests.
 | <img src="docs/media/policy_reach.webp" width="240"> | <img src="docs/media/procedural_room.webp" width="240"> | <img src="docs/media/convex_decomposition.webp" width="240"> |
 | [Perception: depth + segmentation](latentphysics/perception/camera.py) | [Perception: lidar point cloud](latentphysics/perception/lidar.py) | [Physics: 8192 parallel worlds](tests/test_throughput_gpu.py) |
 | <img src="docs/media/depth_segmentation.webp" width="240"> | <img src="docs/media/lidar_pointcloud.webp" width="240"> | <img src="docs/media/hero.png" width="240"> |
+| [Worlds: articulated furniture](examples/articulated_room.py) | | |
+| <img src="docs/media/articulated_room.webp" width="240"> | | |
 
 And the whole thing speaks PyTorch:
 
