@@ -74,8 +74,14 @@ def _auto_budgets(mjm, n_worlds: int) -> dict:
         # convex-CCD (GJK/EPA) slots cost ~3 KB each. Demand is ~2-4 slots per
         # dynamic geom per world (measured ~64/world on a 32-object room), so
         # scale per world with margin but hard-cap total: the cap trades
-        # dropped convex-contact candidates for not OOMing — the R2 BVH
-        # broadphase is the real fix for huge cluttered batches.
+        # dropped convex-contact candidates for not OOMing.
+        # MEASURED cliff (RTX 5070 Ti, 4096 worlds, see test_throughput_gpu):
+        # it is DYNAMIC-body count, not total geoms. Static furniture scales
+        # flat to 800+ geoms (~2.4M steps/s) because the S/F masks prune
+        # static-static pairs at model build. Dynamic clutter is the wall:
+        # 12/20/40 free bodies -> 0.93M/0.52M/0.12M steps/s (~1/n^2), and
+        # >~40 exhausts budgets on 16 GB. A static-AABB BVH would not help
+        # this; the lever is dynamic-vs-* broadphase + constraint budgeting.
         "naccdmax": min(max(2 * n_dyn, 16) * max(n_worlds, 1), 1 << 17),
     }
 
