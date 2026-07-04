@@ -64,7 +64,8 @@ match the C-engine reference to **0.00% measured** (committed gate: <5%).
 The Franka manipulation scene steps at **8.6M physics steps/s measured across
 8192 worlds** (committed regression floor: 4M). The Franka runs a **spread of
 scripted tasks — pick-and-place, stacking, pushing, sorting, sweeping, peg
-insertion, drawer opening** — via IK-scripted contact (no learned policies),
+insertion, drawer opening, tool use** — via IK-scripted contact (no learned
+policies),
 and a **12-task benchmark suite** auto-verifies behavior with physically
 checkable predicates. Every number above sits next to the committed test that
 enforces it.
@@ -75,14 +76,14 @@ enforces it.
 | <img src="docs/media/franka_pick_place.webp" width="240"> | <img src="docs/media/franka_stack.webp" width="240"> | <img src="docs/media/franka_push.webp" width="240"> |
 | [Manipulation: peg-in-hole](examples/franka_peg_insert.py) | [Manipulation: sort into bin](examples/franka_sort.py) | [Manipulation: sweep clutter](examples/franka_sweep.py) |
 | <img src="docs/media/franka_peg_insert.webp" width="240"> | <img src="docs/media/franka_sort.webp" width="240"> | <img src="docs/media/franka_sweep.webp" width="240"> |
-| [Manipulation: open drawer](examples/franka_open_drawer_arm.py) | [Rigid: collision tower](examples/collision_tower.py) | [Rigid: contype masks](examples/contype_demo.py) |
-| <img src="docs/media/franka_open_drawer.webp" width="240"> | <img src="docs/media/collision_tower.webp" width="240"> | <img src="docs/media/contype_masks.webp" width="240"> |
-| [Worlds: procedural room](examples/procedural_room.py) | [Worlds: articulated furniture](examples/articulated_room.py) | [Assets: real CC0 meshes](examples/real_assets.py) |
-| <img src="docs/media/procedural_room.webp" width="240"> | <img src="docs/media/articulated_room.webp" width="240"> | <img src="docs/media/real_assets.webp" width="240"> |
-| [Assets: GLB scene import](examples/glb_import.py) | [Assets: convex decomposition](examples/convex_decomposition.py) | [Perception: depth + segmentation](examples/perception_camera.py) |
-| <img src="docs/media/glb_import.webp" width="240"> | <img src="docs/media/convex_decomposition.webp" width="240"> | <img src="docs/media/depth_segmentation.webp" width="240"> |
-| [Perception: lidar point cloud](examples/perception_lidar.py) | [Physics: 8192 parallel worlds — 16 shown](examples/parallel_worlds.py) | |
-| <img src="docs/media/lidar_pointcloud.webp" width="240"> | <img src="docs/media/parallel_worlds.webp" width="240"> | |
+| [Manipulation: open drawer](examples/franka_open_drawer_arm.py) | [Manipulation: tool use](examples/franka_tool_use.py) | [Rigid: collision tower](examples/collision_tower.py) |
+| <img src="docs/media/franka_open_drawer.webp" width="240"> | <img src="docs/media/franka_tool_use.webp" width="240"> | <img src="docs/media/collision_tower.webp" width="240"> |
+| [Rigid: contype masks](examples/contype_demo.py) | [Worlds: procedural room](examples/procedural_room.py) | [Worlds: articulated furniture](examples/articulated_room.py) |
+| <img src="docs/media/contype_masks.webp" width="240"> | <img src="docs/media/procedural_room.webp" width="240"> | <img src="docs/media/articulated_room.webp" width="240"> |
+| [Assets: real CC0 meshes](examples/real_assets.py) | [Assets: GLB scene import](examples/glb_import.py) | [Assets: convex decomposition](examples/convex_decomposition.py) |
+| <img src="docs/media/real_assets.webp" width="240"> | <img src="docs/media/glb_import.webp" width="240"> | <img src="docs/media/convex_decomposition.webp" width="240"> |
+| [Perception: depth + segmentation](examples/perception_camera.py) | [Perception: lidar point cloud](examples/perception_lidar.py) | [Physics: 8192 parallel worlds — 16 shown](examples/parallel_worlds.py) |
+| <img src="docs/media/depth_segmentation.webp" width="240"> | <img src="docs/media/lidar_pointcloud.webp" width="240"> | <img src="docs/media/parallel_worlds.webp" width="240"> |
 
 And the whole thing speaks PyTorch:
 
