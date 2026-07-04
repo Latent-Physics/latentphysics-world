@@ -5,7 +5,8 @@ world-space vertices (sidesteps MuJoCo's inability to express non-uniform
 node scale), and feed the same composer: CoACD convex hulls for collision,
 the original mesh as a collision-free visual geom, and the same
 collision-mask scheme as the procedural generator (static x static pruned
-at model build).
+at model build). Diffuse UV textures pass through to MuJoCo materials on
+the visual geom (``ImportSpec.textures``); physics is untouched by them.
 
 Up-axis: glTF is +y-up by convention (``ImportSpec.up``); USD stages declare
 ``upAxis`` and ``metersPerUnit`` metadata, which are honored automatically.
@@ -43,6 +44,7 @@ class ImportSpec:
     ls_iterations: int = 10
     validate: bool = True          # run structural validity check on the output
     strict: bool = False           # raise on validity issues instead of warning
+    textures: bool = True          # pass diffuse UV textures through to MuJoCo
 
 
 @dataclass
@@ -58,12 +60,27 @@ def _sanitize(name: str) -> str:
     return re.sub(r"[^A-Za-z0-9_]", "_", name) or "node"
 
 
+def _texture_trimesh(mesh):
+    """The mesh's diffuse texture as a PIL image, iff it can map onto the
+    exported OBJ: needs per-vertex UVs (written as ``vt`` lines) AND a
+    baseColor/diffuse image. Returns None otherwise — vertex-colored or
+    untextured assets keep the mean-rgba path."""
+    try:
+        if getattr(mesh.visual, "uv", None) is None:
+            return None
+        mat = mesh.visual.material
+        img = getattr(mat, "baseColorTexture", None) or getattr(mat, "image", None)
+        return img if getattr(img, "size", None) else None
+    except Exception:
+        return None
+
+
 def _rgba_trimesh(mesh) -> str:
-    """A single representative color for the mesh. MuJoCo's renderer takes no
-    UV texture from imported meshes, so we collapse the asset's appearance to
-    one rgba: vertex colors if present, else the mean of the diffuse texture
-    (this is what carries a Poly Haven asset's real hue), else the PBR base
-    color, else neutral gray."""
+    """A single representative color for the mesh — used on collision hulls
+    and as the visual fallback when no UV texture passes through (see
+    ``_texture_trimesh``): vertex colors if present, else the mean of the
+    diffuse texture (this is what carries a Poly Haven asset's real hue),
+    else the PBR base color, else neutral gray."""
     def _tex_mean():
         mat = mesh.visual.material
         img = getattr(mat, "baseColorTexture", None) or getattr(mat, "image", None)
@@ -107,12 +124,28 @@ def compose_mjcf(objects, out_dir: str, name: str, spec: ImportSpec) -> str:
         world.export(os.path.join(out_dir, vis))
         assets.append(f'<mesh name="{base}_v" file="{vis}"/>')
 
+        # diffuse UV texture passthrough (visual-only; physics untouched).
+        # geom rgba MULTIPLIES the material texture, so textured geoms must
+        # stay at "1 1 1 1" or the mean color double-tints the render.
+        tex_img = _texture_trimesh(world) if spec.textures else None
+        if tex_img is not None:
+            tex_fn = f"{base}_diffuse.png"  # deterministic name: trimesh's own
+            # side-written texture is named after the material and collides
+            # across assets sharing a material name
+            tex_img.convert("RGB").save(os.path.join(out_dir, tex_fn))
+            assets.append(f'<texture name="{base}_tex" type="2d" file="{tex_fn}"/>')
+            assets.append(f'<material name="{base}_mat" texture="{base}_tex" '
+                          'specular="0.1" shininess="0.1"/>')
+            look = f'material="{base}_mat" rgba="1 1 1 1"'
+        else:
+            look = f'rgba="{obj.rgba}"'
+
         hulls = convex_decompose(world, threshold=spec.threshold,
                                  max_hulls=spec.max_hulls)
         # visual geom carries NO mass: without this it contributes inertia at
         # MuJoCo's default density (1000) and silently overrides spec.density,
         # so every dynamic body's mass came from the render mesh, not physics
-        geoms = [f'<geom type="mesh" mesh="{base}_v" rgba="{obj.rgba}" '
+        geoms = [f'<geom type="mesh" mesh="{base}_v" {look} '
                  f'contype="0" conaffinity="0" group="2" mass="0"/>']
         for i, part in enumerate(hulls):
             fn = f"{base}_c{i}.obj"
