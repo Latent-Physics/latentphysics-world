@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="docs/media/logo.svg" width="150" alt="Latent Physics World logo"/>
+<img src="docs/media/logo.png" width="300" alt="Latent Physics World logo"/>
 
 # Latent Physics World
 
