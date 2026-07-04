@@ -210,61 +210,102 @@ def _art_hinged_cabinet(rng, i, pos, sz, h, F, D, room_half):
         f'<geom name="f{i}s1" type="box" pos="0 {dy - t:.3f} {h/2:.3f}" size="{dx:.3f} {t} {h/2 - 0.02:.3f}" rgba="{c}" {F}/>',
         f'<geom name="f{i}t" type="box" pos="0 0 {h:.3f}" size="{dx + 0.015:.3f} {dy + 0.015:.3f} 0.015" rgba="{dark}" {F}/>',
     ]
+    metal = "0.78 0.79 0.82 1"
+    # a shelf inside at mid-height: an open cabinet must read as a cabinet,
+    # not an empty shell
+    g.append(f'<geom name="f{i}shelf" type="box" pos="0 0 {0.12 + (h - 0.12)*0.5:.3f}" '
+             f'size="{dx*0.9:.3f} {dy - 2*t:.3f} 0.012" rgba="{c}" {F}/>')
     dw = dy - t                                          # door half-width
+    hy = -2 * dw + 0.06                                  # handle near the free edge
     door = (
         f'<body name="f{i}door" pos="{dx + 0.02:.3f} {dw:.3f} {zc:.3f}">'
         f'<joint name="f{i}_door" type="hinge" axis="0 0 1" range="0 108" '
         f'damping="2.5" frictionloss="0.8"/>'
         f'<geom name="f{i}d" type="box" pos="0 {-dw:.3f} 0" size="0.015 {dw:.3f} {zh:.3f}" '
         f'rgba="{_jit(rng, wood, 0.02)}" density="500" {D}/>'
-        f'<geom name="f{i}dh" type="box" pos="0.035 {-2*dw + 0.07:.3f} 0" size="0.012 0.012 0.05" '
-        f'rgba="{dark}" density="500" {D}/>'
+        # metal D-pull: two standoff posts + a vertical bar proud of the face
+        f'<geom name="f{i}dpt" type="box" pos="0.028 {hy:.3f} 0.075" size="0.014 0.01 0.01" rgba="{metal}" density="700" {D}/>'
+        f'<geom name="f{i}dpb" type="box" pos="0.028 {hy:.3f} -0.075" size="0.014 0.01 0.01" rgba="{metal}" density="700" {D}/>'
+        f'<geom name="f{i}dh" type="box" pos="0.048 {hy:.3f} 0" size="0.01 0.012 0.078" '
+        f'rgba="{metal}" density="700" {D}/>'
         f'</body>'
     )
     xml = (f'<body name="f{i}art" pos="{pos[0]:.3f} {pos[1]:.3f} 0" quat="{q}">'
            + "".join(g) + door + '</body>')
-    return [xml], len(g) + 2
+    return [xml], len(g) + 4
 
 
 def _art_drawer_chest(rng, i, pos, sz, h, F, D, room_half):
-    """Low chest with two working drawers on slide joints."""
+    """Low face-frame chest with two working drawers on slide joints.
+
+    Each drawer is a HOLLOW tray (floor + four low walls) behind a tall front
+    face — pulled open it reads as a real drawer, not a solid block. The two
+    faces fill the front with tight ~4 mm reveals around a visible face-frame
+    rail (no floaty gaps), and each carries a proud metal U-pull that
+    contrasts against the wood so the handle is actually visible.
+    """
     wood = _WOODS[rng.integers(len(_WOODS))]
     dark = _jit(rng, tuple(v * 0.6 for v in wood))
     c = _jit(rng, wood)
+    face = _jit(rng, wood, 0.02)
+    metal = "0.78 0.79 0.82 1"                          # brushed pulls: contrast on any wood
     q, along_x = _facing_quat(pos, room_half)
     dx = sz[0] if along_x else sz[1]
     dy = sz[1] if along_x else sz[0]
     dx, dy = max(dx, 0.22), min(max(dy, 0.30), 0.6)
     h = min(max(h, 0.55), 0.85)
     t = 0.02
+    # front opening spans from the bottom-panel top to under the top panel
+    open_bot, open_top = 0.12, h - 0.015
+    rail_h, rev = 0.02, 0.004                           # face-frame rail + reveal
+    fhh = (open_top - open_bot - rail_h - 4 * rev) / 4  # front-face half-height
+    f0z = open_bot + rev + fhh                          # lower face center z
+    rlz = f0z + fhh + rev + rail_h / 2                  # mid rail center z
+    f1z = rlz + rail_h / 2 + rev + fhh                  # upper face center z
     g = [
-        f'<geom name="f{i}k" type="box" pos="0 0 0.04" size="{dx*0.9:.3f} {dy*0.9:.3f} 0.04" rgba="{dark}" {F}/>',
+        # near-full-footprint base (toe kick inset only 1.5 cm — a 10% inset
+        # read as a floating shadow gap)
+        f'<geom name="f{i}k" type="box" pos="0 0 0.04" size="{dx - 0.015:.3f} {dy - 0.015:.3f} 0.04" rgba="{dark}" {F}/>',
         f'<geom name="f{i}bt" type="box" pos="0 0 0.10" size="{dx:.3f} {dy - 2*t:.3f} 0.02" rgba="{c}" {F}/>',
         f'<geom name="f{i}bk" type="box" pos="{-(dx - t):.3f} 0 {h/2:.3f}" size="{t} {dy - 2*t:.3f} {h/2 - 0.02:.3f}" rgba="{c}" {F}/>',
         f'<geom name="f{i}s0" type="box" pos="0 {-(dy - t):.3f} {h/2:.3f}" size="{dx:.3f} {t} {h/2 - 0.02:.3f}" rgba="{c}" {F}/>',
         f'<geom name="f{i}s1" type="box" pos="0 {dy - t:.3f} {h/2:.3f}" size="{dx:.3f} {t} {h/2 - 0.02:.3f}" rgba="{c}" {F}/>',
         f'<geom name="f{i}t" type="box" pos="0 0 {h:.3f}" size="{dx + 0.015:.3f} {dy + 0.015:.3f} 0.015" rgba="{dark}" {F}/>',
+        # face-frame rail between the drawers, set back so the faces slide clear
+        f'<geom name="f{i}mid" type="box" pos="{dx - 0.006:.3f} 0 {rlz:.3f}" size="0.008 {dy - t:.3f} {rail_h/2:.3f}" rgba="{c}" {F}/>',
     ]
+    travel = min(0.28, 1.2 * dx)
+    tray_hd = min(0.16, dx * 0.72)                      # tray half-depth
+    # ~3 cm clearance to the carcass walls: a slide joint gives no lateral
+    # constraint, so a close-fit tray wobbles into the walls and DRAGS.
+    tray_hw = dy - 0.08                                 # tray half-width
+    wall_t, wall_hz = 0.006, min(0.05, fhh * 0.7)       # tray wall thickness / half-height
+    fz = -fhh + 0.02                                    # tray floor center (drawer-local z)
+    wz = fz + 0.006 + wall_hz                           # tray wall center
     drawers = []
-    dh = (h - 0.2) / 2 * 0.42                            # drawer half-height
-    travel = min(0.3, 1.2 * dx)
-    for k in range(2):
-        zk = 0.14 + (2 * k + 1) * (h - 0.2) / 4
+    for k, zc in enumerate((f0z, f1z)):
         drawers.append(
-            f'<body name="f{i}drw{k}" pos="{dx:.3f} 0 {zk:.3f}">'
+            f'<body name="f{i}drw{k}" pos="{dx:.3f} 0 {zc:.3f}">'
+            # friction/damping tuned for the now-hollow tray (the old values
+            # were sized for a solid ~8 kg block and dragged a light drawer)
             f'<joint name="f{i}_drawer{k}" type="slide" axis="1 0 0" range="0 {travel:.3f}" '
-            f'damping="8" frictionloss="2.5"/>'
-            f'<geom name="f{i}w{k}f" type="box" pos="0.015 0 0" size="0.015 {dy*0.92:.3f} {dh:.3f}" '
-            f'rgba="{_jit(rng, wood, 0.02)}" density="500" {D}/>'
-            f'<geom name="f{i}w{k}b" type="box" pos="{-dx*0.8:.3f} 0 {-dh*0.15:.3f}" '
-            f'size="{dx*0.8:.3f} {dy*0.8:.3f} {dh*0.8:.3f}" rgba="{c}" density="300" {D}/>'
-            f'<geom name="f{i}w{k}h" type="box" pos="0.045 0 {dh*0.3:.3f}" size="0.015 0.09 0.012" '
-            f'rgba="{dark}" density="500" {D}/>'
+            f'damping="3" frictionloss="0.8"/>'
+            # tall front face
+            f'<geom name="f{i}w{k}f" type="box" pos="0.008 0 0" size="0.008 {tray_hw + 0.012:.3f} {fhh:.3f}" rgba="{face}" density="500" {D}/>'
+            # hollow tray: floor + back + two sides, all lower than the face
+            f'<geom name="f{i}w{k}bot" type="box" pos="{-tray_hd:.3f} 0 {fz:.3f}" size="{tray_hd:.3f} {tray_hw:.3f} 0.006" rgba="{c}" density="400" {D}/>'
+            f'<geom name="f{i}w{k}bk" type="box" pos="{-2*tray_hd + 0.006:.3f} 0 {wz:.3f}" size="0.006 {tray_hw:.3f} {wall_hz:.3f}" rgba="{c}" density="400" {D}/>'
+            f'<geom name="f{i}w{k}sl" type="box" pos="{-tray_hd:.3f} {-(tray_hw - wall_t):.3f} {wz:.3f}" size="{tray_hd:.3f} {wall_t} {wall_hz:.3f}" rgba="{c}" density="400" {D}/>'
+            f'<geom name="f{i}w{k}sr" type="box" pos="{-tray_hd:.3f} {tray_hw - wall_t:.3f} {wz:.3f}" size="{tray_hd:.3f} {wall_t} {wall_hz:.3f}" rgba="{c}" density="400" {D}/>'
+            # metal U-pull: two standoff posts + a graspable bar proud of the face
+            f'<geom name="f{i}w{k}pl" type="box" pos="0.032 -0.075 0" size="0.016 0.008 0.008" rgba="{metal}" density="700" {D}/>'
+            f'<geom name="f{i}w{k}pr" type="box" pos="0.032 0.075 0" size="0.016 0.008 0.008" rgba="{metal}" density="700" {D}/>'
+            f'<geom name="f{i}w{k}h" type="box" pos="0.048 0 0" size="0.008 0.083 0.011" rgba="{metal}" density="700" {D}/>'
             f'</body>'
         )
     xml = (f'<body name="f{i}art" pos="{pos[0]:.3f} {pos[1]:.3f} 0" quat="{q}">'
            + "".join(g) + "".join(drawers) + '</body>')
-    return [xml], len(g) + 6
+    return [xml], len(g) + 2 * 8
 
 
 def _art_lid_chest(rng, i, pos, sz, h, F, D, room_half):
@@ -293,14 +334,16 @@ def _art_lid_chest(rng, i, pos, sz, h, F, D, room_half):
     ]
     # lid hinged at the back-top edge (x=-dx, z=h); axis 0 -1 0 so a positive
     # angle lifts the front of the slab up and back over the chest
+    metal = "0.78 0.79 0.82 1"
     lid = (
         f'<body name="f{i}lid" pos="{-dx:.3f} 0 {h:.3f}">'
         f'<joint name="f{i}_lid" type="hinge" axis="0 -1 0" range="0 100" '
         f'damping="3" frictionloss="1.0"/>'
         f'<geom name="f{i}ld" type="box" pos="{dx:.3f} 0 0" size="{dx:.3f} {dy:.3f} 0.02" '
         f'rgba="{_jit(rng, wood, 0.02)}" density="400" {D}/>'
-        f'<geom name="f{i}lh" type="box" pos="{2*dx - 0.03:.3f} 0 0.03" size="0.03 0.06 0.012" '
-        f'rgba="{dark}" density="400" {D}/>'
+        # raised metal bar pull at the lid's front edge — fingers hook under it
+        f'<geom name="f{i}lh" type="box" pos="{2*dx - 0.03:.3f} 0 0.032" size="0.012 0.07 0.018" '
+        f'rgba="{metal}" density="700" {D}/>'
         f'</body>'
     )
     xml = (f'<body name="f{i}art" pos="{pos[0]:.3f} {pos[1]:.3f} 0" quat="{q}">'
@@ -330,22 +373,30 @@ def _art_sliding_door_cabinet(rng, i, pos, sz, h, F, D, room_half):
         f'<geom name="f{i}s1" type="box" pos="0 {dy - t:.3f} {h/2:.3f}" size="{dx:.3f} {t} {h/2 - 0.02:.3f}" rgba="{c}" {F}/>',
         f'<geom name="f{i}t" type="box" pos="0 0 {h:.3f}" size="{dx + 0.015:.3f} {dy + 0.015:.3f} 0.015" rgba="{dark}" {F}/>',
     ]
+    metal = "0.78 0.79 0.82 1"
+    # a shelf inside at mid-height so the revealed half reads as a cabinet
+    g.append(f'<geom name="f{i}shelf" type="box" pos="0 0 {0.12 + (h - 0.12)*0.5:.3f}" '
+             f'size="{dx*0.9:.3f} {dy - 2*t:.3f} 0.012" rgba="{c}" {F}/>')
     # door covers the left half of the front (+x) face and slides +y to reveal it
     dw = dy * 0.5
     travel = dy
+    hy = dw - 0.06                                       # handle near the door's leading edge
     door = (
         f'<body name="f{i}sd" pos="{dx + 0.02:.3f} {-dw:.3f} {zc:.3f}">'
         f'<joint name="f{i}_sdoor" type="slide" axis="0 1 0" range="0 {travel:.3f}" '
         f'damping="5" frictionloss="1.5"/>'
         f'<geom name="f{i}sdg" type="box" pos="0 0 0" size="0.015 {dw:.3f} {zh:.3f}" '
         f'rgba="{_jit(rng, wood, 0.02)}" density="400" {D}/>'
-        f'<geom name="f{i}sdh" type="box" pos="0.03 {dw - 0.05:.3f} 0" size="0.012 0.03 0.05" '
-        f'rgba="{dark}" density="400" {D}/>'
+        # metal D-pull proud of the sliding panel
+        f'<geom name="f{i}sdpt" type="box" pos="0.028 {hy:.3f} 0.06" size="0.014 0.01 0.01" rgba="{metal}" density="700" {D}/>'
+        f'<geom name="f{i}sdpb" type="box" pos="0.028 {hy:.3f} -0.06" size="0.014 0.01 0.01" rgba="{metal}" density="700" {D}/>'
+        f'<geom name="f{i}sdh" type="box" pos="0.048 {hy:.3f} 0" size="0.01 0.012 0.062" '
+        f'rgba="{metal}" density="400" {D}/>'
         f'</body>'
     )
     xml = (f'<body name="f{i}art" pos="{pos[0]:.3f} {pos[1]:.3f} 0" quat="{q}">'
            + "".join(g) + door + '</body>')
-    return [xml], len(g) + 2
+    return [xml], len(g) + 4
 
 
 _ART_ARCHETYPES = (_art_hinged_cabinet, _art_drawer_chest,

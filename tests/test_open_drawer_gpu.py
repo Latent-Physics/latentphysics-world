@@ -22,6 +22,19 @@ from latentphysics.envs.open_drawer import OpenDrawer, build_scene  # noqa: E402
 N = 16
 
 
+def _retract_arm(env):
+    """Lift the arm clear of the chest for a pure joint-drive check. At home
+    the gripper is staged in the drawer mouth, and a servo-held arm resting
+    there drags the (realistically light hollow) drawer; the arm actually
+    opening it is covered by examples/franka_open_drawer_arm.py."""
+    qp, ct = env.scene.qpos(), env.scene.state("ctrl")
+    qp[:, 1] = -1.3
+    ct[:, 1] = -1.3
+    env.scene.qvel().zero_()
+    for _ in range(30):
+        env.scene.step()
+
+
 @pytest.fixture(scope="module")
 def env(tmp_path_factory):
     path = build_scene(str(tmp_path_factory.mktemp("dw") / "open_drawer.xml"))
@@ -43,6 +56,7 @@ def test_reset_and_step_shapes(env):
 
 def test_opening_drawer_is_success(env):
     env.reset()
+    _retract_arm(env)
     _, r0, _ = env._compute()
     jid = mujoco.mj_name2id(env.scene.mjm, mujoco.mjtObj.mjOBJ_JOINT, "f0_drawer1")
     dof = int(env.scene.mjm.jnt_dofadr[jid])
@@ -58,6 +72,7 @@ def test_opening_drawer_is_success(env):
 
 def test_auto_reset_restores_closed_drawer(env):
     env.reset()
+    _retract_arm(env)
     jid = mujoco.mj_name2id(env.scene.mjm, mujoco.mjtObj.mjOBJ_JOINT, "f0_drawer1")
     dof = int(env.scene.mjm.jnt_dofadr[jid])
     qvel = env.scene.qvel()

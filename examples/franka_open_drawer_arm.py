@@ -84,8 +84,8 @@ def main():
     if args.record:
         from _record import record_webp
         record_webp(build_articulated_scene("open_drawer"), np.asarray(traj), "franka_open_drawer",
-                    cam={"lookat": (0.35, 0.0, 0.47), "distance": 1.25,
-                         "azimuth": 108, "elevation": -10}, every=4, quality=54)
+                    cam={"lookat": (0.33, 0.0, 0.5), "distance": 1.2,
+                         "azimuth": 108, "elevation": -26}, every=4, quality=54)
 
 
 if __name__ == "__main__":
