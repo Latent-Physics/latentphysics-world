@@ -43,9 +43,12 @@ def test_valid_and_articulated(settled):
     m, _ = settled
     rep = validate_model(m)
     assert rep.ok, str(rep)
-    # 19 DoF: freejoint + 5x(swivel+roll) + seat swivel + recline + head pitch
-    assert m.nv == 19
-    for name in (["chair_swivel", "chair_recline", "chair_head_pitch"]
+    # 23 DoF: freejoint + 5x(swivel+roll) + lift + seat swivel + recline
+    #         + 2x armrest slide + head slide + head pitch
+    assert m.nv == 23
+    for name in (["chair_lift", "chair_swivel", "chair_recline",
+                  "chair_head_slide", "chair_head_pitch",
+                  "chair_arm_l_slide", "chair_arm_r_slide"]
                  + [f"caster{i}_swivel" for i in range(5)]
                  + [f"wheel{i}_roll" for i in range(5)]):
         _jadr(m, name)

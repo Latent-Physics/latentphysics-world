@@ -36,7 +36,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import mujoco  # noqa: E402
 
-from _chair import chair_assets, chair_body  # noqa: E402
+from _chair import N_CHAIR_ZERO_QPOS, chair_assets, chair_body  # noqa: E402
 from _ik import solve_ik  # noqa: E402
 
 MEN = os.path.join(os.environ.get("LPW_MENAGERIE", os.path.expanduser("~/lpw/menagerie")),
@@ -56,7 +56,8 @@ def build_scene() -> str:
         sys.exit("mujoco_menagerie not found — clone it to ~/lpw/menagerie "
                  "or set LPW_MENAGERIE (see docs/GETTING_STARTED.md)")
     chair = chair_body(pos=(CHAIR_X, 0, 0.004))
-    qpos = f"{ARM_HOME} 0.04 0.04  {CHAIR_X} 0 0.004 1 0 0 0" + " 0" * 13
+    qpos = (f"{ARM_HOME} 0.04 0.04  {CHAIR_X} 0 0.004 1 0 0 0"
+            + " 0" * N_CHAIR_ZERO_QPOS)
     xml = f"""<mujoco model="lpw_chair_push">
   <include file="mjx_panda.xml"/>
   <option timestep="{DT}" integrator="implicitfast"/>
@@ -293,7 +294,9 @@ def run_inspect():
     d = mujoco.MjData(m)
     poses = {"neutral": {}, "articulated": {
         "chair_swivel": np.radians(35), "chair_recline": 0.20,
-        "chair_head_pitch": 0.15,
+        "chair_head_pitch": 0.15, "chair_lift": 0.035,
+        "chair_head_slide": 0.03, "chair_arm_l_slide": 0.05,
+        "chair_arm_r_slide": 0.05,
         **{f"caster{i}_swivel": np.radians(30 + 55 * i) for i in range(5)}}}
     r = mujoco.Renderer(m, height=1440, width=1920)
     cam = mujoco.MjvCamera()
