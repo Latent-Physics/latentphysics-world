@@ -3,7 +3,7 @@
 Pure numpy: parts are superellipse cross-sections swept along an axis (a
 loft) or tubes swept along a 3D path (piping, brackets), written as OBJ
 with UVs. Deterministic — same code, same bytes. Assets are generated on
-demand into ~/lpw/assets/chair_meshes_v3 (never committed, same policy as
+demand into ~/lpw/assets/chair_meshes_v4 (never committed, same policy as
 fetched assets). Collision stays primitive — these meshes carry no mass
 and no contype.
 
@@ -20,7 +20,7 @@ import os
 
 import numpy as np
 
-MESH_DIR = os.path.expanduser("~/lpw/assets/chair_meshes_v3")
+MESH_DIR = os.path.expanduser("~/lpw/assets/chair_meshes_v4")
 
 BACK_X, BACK_Z0, BACK_Z1 = -0.215, 0.487, 1.045
 
@@ -137,6 +137,53 @@ def _shrink_caps(build_ring, ts, shrink=(1.0, 0.82, 0.5, 0.18), pad=0.014):
     return rings
 
 
+def _periodic_noise(n, K, seed, cells=6, octaves=3):
+    """Smooth value noise on an (n, K) grid, periodic along K (ring wrap)."""
+    rng = np.random.default_rng(seed)
+    out = np.zeros((n, K))
+    amp = 1.0
+    for o in range(octaves):
+        c = cells * (2 ** o)
+        grid = rng.standard_normal((c + 1, c + 1))
+        grid[:, -1] = grid[:, 0]                     # periodic in ring axis
+        yi = np.linspace(0, c - 1e-6, n)
+        xi = np.linspace(0, c - 1e-6, K, endpoint=False)
+        y0, x0 = np.floor(yi).astype(int), np.floor(xi).astype(int)
+        fy, fx = (yi - y0)[:, None], (xi - x0)[None, :]
+        g = (grid[y0][:, x0] * (1 - fy) * (1 - fx)
+             + grid[y0 + 1][:, x0] * fy * (1 - fx)
+             + grid[y0][:, x0 + 1] * (1 - fy) * fx
+             + grid[y0 + 1][:, x0 + 1] * fy * fx)
+        out += amp * g
+        amp *= 0.5
+    return out / max(out.std(), 1e-9)
+
+
+def _soften(rings, seed, amp, groove=None, groove_depth=0.0018, face=None):
+    """Soft-goods pass: seeded smooth-noise wrinkles pushed along each
+    ring's outward radial direction, plus an optional stitched-seam groove
+    pressed inward near a piping ``groove`` path. ``face`` restricts the
+    wrinkles to the surface facing that direction (edges stay taut, so the
+    silhouette keeps its clean seam line)."""
+    rings = [np.asarray(r, dtype=float) for r in rings]
+    n, K = len(rings), rings[0].shape[0]
+    noise = _periodic_noise(n, K, seed)
+    gp = None if groove is None else np.asarray(groove, dtype=float)
+    fdir = None if face is None else np.asarray(face, dtype=float)
+    out = []
+    for i, ring in enumerate(rings):
+        c = ring.mean(0)
+        radial = ring - c
+        radial /= np.linalg.norm(radial, axis=1, keepdims=True) + 1e-12
+        gain = 1.0 if fdir is None else np.clip(radial @ fdir, 0, 1) ** 0.7
+        disp = (amp * noise[i] * gain)[:, None] * radial
+        if gp is not None:
+            d = np.linalg.norm(ring[:, None, :] - gp[None, :, :], axis=2).min(1)
+            disp -= (groove_depth * np.exp(-(d / 0.007) ** 2))[:, None] * radial
+        out.append(ring + disp)
+    return out
+
+
 # ---------------------------------------------------- backrest silhouette
 def _back_w2(t):
     """Hourglass half-width (front photo): wide shoulders, narrow waist,
@@ -178,11 +225,14 @@ def back_cushion(K=40):
         x = BACK_X + _back_x_off(t) + r[:, 0] + curl
         return np.stack([x, r[:, 1], np.full(K, z)], axis=1)
 
-    return _loft(_shrink_caps(ring, ts, pad=0.012), uv=(7.0, 8.0))
+    rings = _shrink_caps(ring, ts, pad=0.012)
+    rings = _soften(rings, seed=21, amp=0.0026, groove=_back_pipe_path(),
+                    face=(1, 0, 0))
+    return _loft(rings, uv=(7.0, 8.0))
 
 
-def back_piping(K=10):
-    """Piped seam around the backrest face, just inside the edge."""
+def _back_pipe_path():
+    """Closed piping path around the backrest face, just inside the edge."""
     pts = []
     ts = np.linspace(0, 1, 46)
     zline = BACK_Z0 + 0.016 + ts * (BACK_Z1 - BACK_Z0 - 0.032)
@@ -200,7 +250,12 @@ def back_piping(K=10):
         w = (_back_w2(0.0) - 0.008) * np.cos(phi)
         pts.append((BACK_X + _back_x_off(0.0) + 0.030, w,
                     zline[0] - 0.008 * np.abs(np.sin(phi))))
-    return _sweep_tube(_smooth_loop(pts, passes=3), r=0.004, K=K, closed=True)
+    return _smooth_loop(pts, passes=3)
+
+
+def back_piping(K=10):
+    """Piped seam cord on the backrest face."""
+    return _sweep_tube(_back_pipe_path(), r=0.004, K=K, closed=True)
 
 
 def back_ribs(n_ribs=7, K=18):
@@ -342,11 +397,14 @@ def seat_cushion(K=40):
                        - 0.012 * np.clip((np.abs(y) - 0.205) / 0.035, 0, 1))
         return np.stack([np.full(K, x), y, 0.442 + z], axis=1)
 
-    return _loft(_shrink_caps(ring, ts, pad=0.010), uv=(9.0, 7.0))
+    rings = _shrink_caps(ring, ts, pad=0.010)
+    rings = _soften(rings, seed=22, amp=0.0030, groove=_seat_pipe_path(),
+                    face=(0, 0, 1))
+    return _loft(rings, uv=(9.0, 7.0))
 
 
-def seat_piping(K=10):
-    """Piped seam cord around the seat cushion's top shoulder."""
+def _seat_pipe_path():
+    """Closed piping path around the seat cushion's top shoulder."""
     th = np.linspace(0, 2 * np.pi, 120, endpoint=False)
     c, s = np.cos(th), np.sin(th)
     p = 3.6
@@ -355,8 +413,12 @@ def seat_piping(K=10):
     z = (0.442 + 0.0315
          - 0.010 * np.clip((np.abs(y) - 0.200) / 0.030, 0, 1)     # side rolloff
          - 0.010 * np.clip((x - 0.14) / 0.09, 0, 1))              # waterfall
-    path = _smooth_loop(np.stack([x, y, z], axis=1), passes=2)
-    return _sweep_tube(path, r=0.0045, K=K, closed=True)
+    return _smooth_loop(np.stack([x, y, z], axis=1), passes=2)
+
+
+def seat_piping(K=10):
+    """Piped seam cord around the seat cushion's top shoulder."""
+    return _sweep_tube(_seat_pipe_path(), r=0.0045, K=K, closed=True)
 
 
 def headrest_pillow(K=36):
@@ -371,7 +433,9 @@ def headrest_pillow(K=36):
         r = _superellipse(K, 0.042 * env * scale + 1e-4, 0.090 * env * scale + 1e-4, 2.6)
         return np.stack([r[:, 0] + curl, np.full(K, y), r[:, 1]], axis=1)
 
-    return _loft(_shrink_caps(ring, ts, shrink=(1.0, 0.7, 0.3), pad=0.004), uv=(4.0, 5.0))
+    rings = _shrink_caps(ring, ts, shrink=(1.0, 0.7, 0.3), pad=0.004)
+    rings = _soften(rings, seed=23, amp=0.0020, face=(1, 0, 0))
+    return _loft(rings, uv=(4.0, 5.0))
 
 
 def headrest_piping(K=10):
@@ -400,7 +464,8 @@ def arm_pad(K=28):
         r = _superellipse(K, 0.048 * env * scale + 1e-4, 0.018 * env * scale + 1e-4, 3.0)
         return np.stack([np.full(K, x), r[:, 0], r[:, 1]], axis=1)
 
-    return _loft(_shrink_caps(ring, ts, shrink=(1.0, 0.7, 0.3), pad=0.004))
+    rings = _shrink_caps(ring, ts, shrink=(1.0, 0.7, 0.3), pad=0.004)
+    return _loft(_soften(rings, seed=24, amp=0.0014, face=(0, 0, 1)))
 
 
 def arm_post(K=18):
@@ -488,22 +553,70 @@ def _to_png(arr):
     return (np.repeat(a[:, :, None], 3, axis=2) * 255).astype(np.uint8)
 
 
-def _stitch_fabric(res=256):
-    """Woven grain + one dashed stitch channel per tile: quilted seams."""
-    rng = np.random.default_rng(11)
+def _tile_noise(res, seed, cells=8, octaves=3):
+    """Tileable smooth value noise in [~-1, 1]."""
+    rng = np.random.default_rng(seed)
+    out = np.zeros((res, res))
+    amp = 1.0
+    for o in range(octaves):
+        c = cells * (2 ** o)
+        grid = rng.standard_normal((c + 1, c + 1))
+        grid[-1, :] = grid[0, :]
+        grid[:, -1] = grid[:, 0]
+        yi = np.linspace(0, c - 1e-6, res)
+        y0 = np.floor(yi).astype(int)
+        fy = (yi - y0)
+        g = (grid[y0][:, y0] * (1 - fy)[:, None] * (1 - fy)[None, :]
+             + grid[y0 + 1][:, y0] * fy[:, None] * (1 - fy)[None, :]
+             + grid[y0][:, y0 + 1] * (1 - fy)[:, None] * fy[None, :]
+             + grid[y0 + 1][:, y0 + 1] * fy[:, None] * fy[None, :])
+        out += amp * g
+        amp *= 0.5
+    return out / max(np.abs(out).max(), 1e-9)
+
+
+def _heather_base(res, seed):
+    """Two-tone heathered knit: fine weave + low-frequency melange blotches.
+    Near-white so the geom rgba still tints it (repo convention)."""
+    rng = np.random.default_rng(seed)
     u = np.linspace(0, 2 * np.pi, res, endpoint=False)
-    warp = 0.5 + 0.5 * np.sin(24 * u)[:, None]
-    weft = 0.5 + 0.5 * np.sin(24 * u)[None, :]
-    base = 0.82 + 0.14 * np.maximum(warp, weft)
-    base = base + 0.025 * rng.standard_normal((res, res))
+    warp = 0.5 + 0.5 * np.sin(32 * u)[:, None]
+    weft = 0.5 + 0.5 * np.sin(32 * u + 1.3)[None, :]
+    weave = 0.80 + 0.13 * np.maximum(warp, weft) + 0.02 * rng.standard_normal((res, res))
+    melange = _tile_noise(res, seed + 1, cells=5)
+    rgb = np.empty((res, res, 3))
+    rgb[:, :, 0] = weave + 0.045 * melange
+    rgb[:, :, 1] = weave + 0.045 * melange
+    rgb[:, :, 2] = weave + 0.020 * melange + 0.012   # cool cast in the blend
+    return rgb
+
+
+def _heather_fabric(res=512):
+    return (np.clip(_heather_base(res, 31), 0, 1) * 255).astype(np.uint8)
+
+
+def _stitch_fabric(res=512):
+    """Heathered knit + one dashed stitch channel per tile: quilted seams."""
+    rgb = _heather_base(res, 31)
     col = res // 2
-    base[:, col - 2:col + 3] *= 0.90                        # seam groove
-    dash = ((np.arange(res) // 7) % 2 == 0).astype(float)   # stitch dashes
-    base[:, col - 1:col + 2] *= (1.0 - 0.22 * dash)[:, None]
-    return _to_png(base)
+    rgb[:, col - 4:col + 5] *= 0.90                         # seam groove
+    dash = ((np.arange(res) // 14) % 2 == 0).astype(float)  # stitch dashes
+    rgb[:, col - 2:col + 3] *= (1.0 - 0.22 * dash)[:, None, None]
+    return (np.clip(rgb, 0, 1) * 255).astype(np.uint8)
 
 
-_TEXTURES = {"chair_stitch": _stitch_fabric}
+def _plastic_grain(res=256):
+    """Molded-plastic micro speckle with a faint brushed direction."""
+    rng = np.random.default_rng(41)
+    base = 0.90 + 0.030 * rng.standard_normal((res, res))
+    base += 0.018 * _tile_noise(res, 42, cells=12)
+    brush = 0.012 * np.sin(np.linspace(0, 2 * np.pi * 40, res))[:, None]
+    return _to_png(base + brush)
+
+
+_TEXTURES = {"chair_heather": _heather_fabric,
+             "chair_stitch": _stitch_fabric,
+             "chair_plastic": _plastic_grain}
 
 
 def ensure_meshes(cache_dir: str = MESH_DIR) -> dict:
@@ -531,7 +644,12 @@ def mesh_assets(cache_dir: str = MESH_DIR) -> str:
     paths = ensure_meshes(cache_dir)
     parts = [f'<mesh name="{n}" file="{paths[n]}" smoothnormal="true"/>'
              for n in _BUILDERS]
-    parts.append(f'<texture name="chair_stitch" type="2d" file="{paths["chair_stitch"]}"/>')
+    for tex in ("chair_heather", "chair_stitch", "chair_plastic"):
+        parts.append(f'<texture name="{tex}" type="2d" file="{paths[tex]}"/>')
+    parts.append('<material name="mat_fabric_soft" texture="chair_heather" '
+                 'reflectance="0.05"/>')
     parts.append('<material name="mat_fabric_stitch" texture="chair_stitch" '
                  'reflectance="0.05"/>')
+    parts.append('<material name="mat_plastic_grain" texture="chair_plastic" '
+                 'specular="0.35" shininess="0.45" reflectance="0.04"/>')
     return "".join(parts)

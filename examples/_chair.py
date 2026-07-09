@@ -132,9 +132,12 @@ def _star_base():
         pitch = math.atan2(z0 - z1, r1 - r0)
         quat = _quat_zy(a, pitch)
         g.append(_geom(None, None, (rm * ca, rm * sa, zm), quat=quat,
-                       rgba=PLASTIC, mesh="star_arm"))
+                       rgba=PLASTIC, material="mat_plastic_grain",
+                       mesh="star_arm"))
     g.append(_geom(None, None, (0, 0, 0), rgba=PLASTIC, mesh="lift_boot"))
     g.append(_geom("cylinder", (0.019, 0.062), (0, 0, 0.295), rgba=METAL,
+                   material="mat_metal"))
+    g.append(_geom("cylinder", (0.022, 0.005), (0, 0, 0.352), rgba=METAL,
                    material="mat_metal"))
     g.append(_geom("capsule", (0.030, 0.055), (0, 0, 0.20), mass=1.8,
                    rgba=PLASTIC, collide=True))
@@ -178,7 +181,7 @@ def _caster(i):
 def _seat():
     """Seat cushion (lofted mesh) + rounded mechanism pod + paddle lever."""
     g = []
-    g.append(_geom(None, None, (0, 0, 0), rgba=PLASTIC_D, mesh="mech_housing"))
+    g.append(_geom(None, None, (0, 0, 0), rgba=PLASTIC_D, material="mat_plastic_grain", mesh="mech_housing"))
     g.append(_geom("box", (0.10, 0.09, 0.02), (0.01, 0, 0.388), mass=2.4,
                    collide=True, rgba=PLASTIC_D))
     g.append(_geom(None, None, (0, 0, 0), rgba=PLASTIC_D, mesh="paddle"))
@@ -227,12 +230,12 @@ def _backrest():
     sweeps from the mechanism pod up to the headrest T-bar. Collision
     stays 3 coarse slabs plus a spine box."""
     g = []
-    g.append(_geom(None, None, (0, 0, 0), material="mat_fabric_fine",
+    g.append(_geom(None, None, (0, 0, 0), material="mat_fabric_soft",
                    rgba=FABRIC, mesh="back_cushion"))
     g.append(_geom(None, None, (0, 0, 0), rgba="0.245 0.245 0.26 1",
                    mesh="back_piping"))
-    g.append(_geom(None, None, (0, 0, 0), rgba=PLASTIC_D, mesh="back_ribs"))
-    g.append(_geom(None, None, (0, 0, 0), rgba=PLASTIC, mesh="spine"))
+    g.append(_geom(None, None, (0, 0, 0), rgba=PLASTIC_D, material="mat_plastic_grain", mesh="back_ribs"))
+    g.append(_geom(None, None, (0, 0, 0), rgba=PLASTIC, material="mat_plastic_grain", mesh="spine"))
     g.append(_geom(None, None, (0, 0, 0), rgba=PLASTIC_D, mesh="butterfly_up"))
     g.append(_geom(None, None, (0, 0, 0), rgba=PLASTIC_D, mesh="butterfly_lo"))
     # collision: 3 coarse slabs following the curve (hourglass widths)
@@ -242,6 +245,9 @@ def _backrest():
                    quat=_quat_zy(0, 0.08), mass=1.0, collide=True, rgba=FABRIC))
     g.append(_geom("box", (0.030, 0.210, 0.10), (BACK_X - 0.020, 0, 0.975),
                    quat=_quat_zy(0, 0.21), mass=1.0, collide=True, rgba=FABRIC))
+    # brand badge plate on the upper shell
+    g.append(_geom("box", (0.0015, 0.052, 0.0085), (BACK_X - 0.0870, 0, 1.008),
+                   quat=_quat_zy(0, 0.21), rgba="0.56 0.56 0.58 1"))
     # spine column collision (this is what a push from behind meets first)
     g.append(_geom("box", (0.022, 0.048, 0.35), (BACK_X - 0.049, 0, 0.79),
                    quat=_quat_zy(0, 0.10), mass=1.2, collide=True, rgba=PLASTIC))
@@ -256,7 +262,7 @@ def _headrest():
     g.append(_geom("box", (0.010, 0.027, 0.046), (-0.018, 0, -HEAD_H2 + 0.016),
                    quat=_quat_zy(0, 0.18), rgba=PLASTIC))
     core_q = _quat_zy(0, 0.14)
-    g.append(_geom(None, None, (0, 0, 0), quat=core_q, material="mat_fabric_fine",
+    g.append(_geom(None, None, (0, 0, 0), quat=core_q, material="mat_fabric_soft",
                    rgba=FABRIC, mesh="headrest_pillow"))
     g.append(_geom(None, None, (0, 0, 0), quat=core_q,
                    rgba="0.245 0.245 0.26 1", mesh="headrest_piping"))
@@ -307,9 +313,9 @@ def chair_body(name="chair", pos=(0, 0, 0.004), yaw_deg=0.0):
 def chair_assets():
     extra = ('<material name="mat_metal" specular="0.9" shininess="0.8" '
              'reflectance="0.35"/>'
-             # lofted meshes carry [0,1] UVs: retile the fabric grain finely
-             '<material name="mat_fabric_fine" texture="grain_fabric" '
-             'texrepeat="1 1" reflectance="0.05"/>')
+             # studio floor: plaster grain + planar reflection
+             '<material name="mat_floor_studio" texture="grain_plaster" '
+             'texuniform="true" texrepeat="1 1" reflectance="0.14"/>')
     return material_assets() + mesh_assets() + extra
 
 
@@ -330,9 +336,10 @@ def chair_scene_xml():
   <worldbody>
     <light pos="1.8 -1.2 2.6" dir="-0.55 0.35 -0.75" diffuse="0.75 0.74 0.72" castshadow="true"/>
     <light pos="-1.6 1.8 2.2" dir="0.5 -0.55 -0.68" diffuse="0.34 0.35 0.38" castshadow="false"/>
-    <geom name="floor" type="plane" size="3.2 3.2 0.1" material="mat_plaster"
-          quat="0.981 0 0 0.195" rgba="0.87 0.87 0.88 1"
-          friction="0.9 0.005 0.0001"/>
+    <light pos="-2.2 -0.6 1.4" dir="0.82 0.22 -0.52" diffuse="0.22 0.22 0.24" castshadow="false"/>
+    <geom name="floor" type="plane" size="3.2 3.2 0.1"
+          material="mat_floor_studio" quat="0.981 0 0 0.195"
+          rgba="0.87 0.87 0.88 1" friction="0.9 0.005 0.0001"/>
     {chair_body()}
   </worldbody>
 </mujoco>"""
