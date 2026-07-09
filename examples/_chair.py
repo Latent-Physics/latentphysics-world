@@ -22,10 +22,13 @@ recline, 2x armrest height (friction-locked), headrest height slide
 in group 2 (meshes carry no mass/contact), collision geoms in group 3
 (repo convention); the caster wheels collide as sphere pairs.
 
-Detail layer: suspension-mesh backrest (translucent woven membrane
-stretched on a perimeter frame tube, lumbar bar behind), piped seams on
-the seat and headrest, quilted stitch channels via a procedural texture,
-and soft armrest pads (compliant ellipsoid contact, solref "0.04 0.5" —
+Detail layer (three reference views: side / back / front): hourglass
+upholstered backrest with piped edge seam; rear architecture from the
+back photo — horizontally ribbed shell, two butterfly brackets, and a
+central sculpted spine sweeping from the mechanism pod up to the
+headrest T-bar; rounded mechanism pod with a paddle lever; piped seams
+on seat and headrest; head-cradling curled headrest; sculpted armrest
+columns and soft pads (compliant ellipsoid contact, solref "0.04 0.5" —
 the one deliberately non-default contact in the asset).
 
 Textures come from latentphysics.assets.materials (procedural fabric
@@ -173,16 +176,12 @@ def _caster(i):
 
 
 def _seat():
-    """Seat cushion (lofted mesh) + tilt mechanism + paddles."""
+    """Seat cushion (lofted mesh) + rounded mechanism pod + paddle lever."""
     g = []
-    g.append(_geom("box", (0.105, 0.090, 0.024), (0.01, 0, 0.388), rgba=PLASTIC_D))
+    g.append(_geom(None, None, (0, 0, 0), rgba=PLASTIC_D, mesh="mech_housing"))
     g.append(_geom("box", (0.10, 0.09, 0.02), (0.01, 0, 0.388), mass=2.4,
                    collide=True, rgba=PLASTIC_D))
-    g.append(_geom("capsule", (0.009, 0.035), (0.06, -0.13, 0.385),
-                   quat=_quat_zy(0, math.radians(90)), rgba=PLASTIC_D))
-    g.append(_geom("capsule", (0.007, 0.028), (-0.04, -0.125, 0.380),
-                   quat=_quat_zy(math.radians(20), math.radians(90)),
-                   rgba=PLASTIC_D))
+    g.append(_geom(None, None, (0, 0, 0), rgba=PLASTIC_D, mesh="paddle"))
     g.append(_geom(None, None, (0, 0, 0), material="mat_fabric_stitch", rgba=FABRIC,
                    mesh="seat_cushion"))
     g.append(_geom(None, None, (0, 0, 0), rgba="0.245 0.245 0.26 1",
@@ -200,8 +199,8 @@ def _armrest(name, s):
     g = [
         _geom("box", (0.026, 0.022, 0.016), (0.02, s * 0.185, 0.386),
               rgba=PLASTIC_D),
-        _geom("capsule", (0.016, 0.084), (0.02, s * 0.214, 0.482), quat=pq,
-              rgba=PLASTIC),
+        _geom(None, None, (0.02, s * 0.214, 0.482), quat=pq, rgba=PLASTIC,
+              mesh="arm_post"),
         _geom("box", (0.028, 0.026, 0.026), (0.02, s * 0.245, 0.594),
               rgba=PLASTIC_D),
         _geom(None, None, (0.035, s * 0.245, 0.640), rgba=PLASTIC_D,
@@ -222,41 +221,31 @@ def _armrest(name, s):
 
 
 def _backrest():
-    """Suspension-mesh backrest: translucent woven membrane stretched on a
-    perimeter frame tube, lumbar bar bowed behind it, spine frame and
-    L-bracket to the tilt mechanism. Collision stays 3 coarse slabs
-    following the curve (slimmed to the membrane plane)."""
+    """Upholstered hourglass backrest (reference photos): fabric cushion
+    with piped edge seam; the rear architecture is a horizontally ribbed
+    shell tied by two butterfly brackets to a central sculpted spine that
+    sweeps from the mechanism pod up to the headrest T-bar. Collision
+    stays 3 coarse slabs plus a spine box."""
     g = []
-    g.append(_geom(None, None, (0, 0, 0), material="mat_mesh_weave",
-                   rgba="0.30 0.30 0.33 0.62", mesh="back_membrane"))
-    g.append(_geom(None, None, (0, 0, 0), rgba=PLASTIC, mesh="back_frame"))
-    g.append(_geom(None, None, (0, 0, 0), rgba=PLASTIC_D, mesh="lumbar_bar"))
-    # collision: 3 coarse slabs following the membrane curve
-    g.append(_geom("box", (0.022, 0.20, 0.095), (BACK_X + 0.045, 0, 0.60),
+    g.append(_geom(None, None, (0, 0, 0), material="mat_fabric_fine",
+                   rgba=FABRIC, mesh="back_cushion"))
+    g.append(_geom(None, None, (0, 0, 0), rgba="0.245 0.245 0.26 1",
+                   mesh="back_piping"))
+    g.append(_geom(None, None, (0, 0, 0), rgba=PLASTIC_D, mesh="back_ribs"))
+    g.append(_geom(None, None, (0, 0, 0), rgba=PLASTIC, mesh="spine"))
+    g.append(_geom(None, None, (0, 0, 0), rgba=PLASTIC_D, mesh="butterfly_up"))
+    g.append(_geom(None, None, (0, 0, 0), rgba=PLASTIC_D, mesh="butterfly_lo"))
+    # collision: 3 coarse slabs following the curve (hourglass widths)
+    g.append(_geom("box", (0.030, 0.175, 0.095), (BACK_X + 0.045, 0, 0.60),
                    quat=_quat_zy(0, -0.04), mass=1.0, collide=True, rgba=FABRIC))
-    g.append(_geom("box", (0.022, 0.225, 0.10), (BACK_X + 0.001, 0, 0.79),
+    g.append(_geom("box", (0.030, 0.165, 0.10), (BACK_X + 0.008, 0, 0.79),
                    quat=_quat_zy(0, 0.08), mass=1.0, collide=True, rgba=FABRIC))
-    g.append(_geom("box", (0.022, 0.205, 0.10), (BACK_X - 0.026, 0, 0.975),
+    g.append(_geom("box", (0.030, 0.210, 0.10), (BACK_X - 0.020, 0, 0.975),
                    quat=_quat_zy(0, 0.21), mass=1.0, collide=True, rgba=FABRIC))
-    # L-bracket to the tilt mechanism: visible side load path seat<->back
-    g.append(_geom("box", (0.070, 0.042, 0.017), (BACK_X + 0.062, 0, 0.442),
-                   quat=_quat_zy(0, -0.52), rgba=PLASTIC))
-    g.append(_geom("box", (0.048, 0.042, 0.015), (BACK_X + 0.095, 0, 0.402),
-                   rgba=PLASTIC))
-    # spine frame
-    g.append(_geom("box", (0.016, 0.052, 0.26), (BACK_X - 0.055, 0, 0.78),
-                   quat=_quat_zy(0, 0.10), rgba=PLASTIC))
-    g.append(_geom("box", (0.016, 0.052, 0.26), (BACK_X - 0.055, 0, 0.78),
+    # spine column collision (this is what a push from behind meets first)
+    g.append(_geom("box", (0.022, 0.048, 0.35), (BACK_X - 0.049, 0, 0.79),
                    quat=_quat_zy(0, 0.10), mass=1.2, collide=True, rgba=PLASTIC))
     return "\n          ".join(g)
-
-
-def _headrest_stalk():
-    """Stalk from the backrest top up to the headrest slide/pitch joints."""
-    top_x = BACK_X - 0.062
-    return _geom("box", (0.010, 0.032, 0.078),
-                 (top_x - 0.020, 0, BACK_Z1 + 0.052),
-                 quat=_quat_zy(0, 0.18), rgba=PLASTIC)
 
 
 def _headrest():
@@ -301,7 +290,6 @@ def chair_body(name="chair", pos=(0, 0, 0.004), yaw_deg=0.0):
                  pos="-0.12 0 0.40" range="-0.03 0.22"
                  stiffness="360" damping="28" armature="0.01"/>
           {_backrest()}
-          {_headrest_stalk()}
           <body name="{name}_headrest" pos="{_q(BACK_X - 0.092, 0, hz)}">
             <joint name="{name}_head_slide" type="slide" axis="0 0 1"
                    range="-0.03 0.04" frictionloss="50" damping="3"
